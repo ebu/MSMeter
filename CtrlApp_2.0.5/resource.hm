@@ -1,0 +1,4 @@
+// Microsoft Visual C++ generated Help ID include file.
+// Used by CtrlApp.rc
+//
+#define HIDC_CREATEFILES                0x808103f8    // IDD_CONTROL

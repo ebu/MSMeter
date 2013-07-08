@@ -1,0 +1,72 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: property2 - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x809 /fo"Release/CtrlApp.res" /d "NDEBUG" /d "_AFXDLL" "C:\Documents and Settings\Administrator\Desktop\CtlApp\CtrlApp.rc"" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP20.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fp"Release/CtrlApp.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\AsynLstn.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\AsynSvSk.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\Control.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\CtrlApp.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\CtrlAppDlg.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\Data.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\Files.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\Header.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\PSheet.cpp"
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\TestClient.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP20.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP21.tmp" with contents
+[
+/nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fp"Release/CtrlApp.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Documents and Settings\Administrator\Desktop\CtlApp\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP21.tmp" 
+Creating temporary file "C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP22.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:no /pdb:"Release/ctrl_app.pdb" /machine:I386 /out:"Release/ctrl_app.exe" 
+".\Release\AsynLstn.obj"
+".\Release\AsynSvSk.obj"
+".\Release\Control.obj"
+".\Release\CtrlApp.obj"
+".\Release\CtrlAppDlg.obj"
+".\Release\Data.obj"
+".\Release\Files.obj"
+".\Release\Header.obj"
+".\Release\PSheet.obj"
+".\Release\StdAfx.obj"
+".\Release\TestClient.obj"
+".\Release\CtrlApp.res"
+]
+Creating command line "link.exe @C:\DOCUME~1\ADMINI~1\LOCALS~1\Temp\RSP22.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+AsynLstn.cpp
+AsynSvSk.cpp
+Control.cpp
+CtrlApp.cpp
+CtrlAppDlg.cpp
+Data.cpp
+Files.cpp
+Header.cpp
+PSheet.cpp
+TestClient.cpp
+Generating Code...
+Linking...
+
+
+
+<h3>Results</h3>
+ctrl_app.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

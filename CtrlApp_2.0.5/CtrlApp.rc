@@ -1,0 +1,379 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+// Generated Help ID header file
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.hm"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 235, 79
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Media storage test application"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    LTEXT           "Broadcast media storage test application, Version 2.0.5,                   © BBC 2011 DPB 20/07/2011",IDC_STATIC,45,6,120,29,SS_NOPREFIX
+    LTEXT           "Issued under the GNU General Public License",IDC_STATIC,45,40,183,10
+    DEFPUSHBUTTON   "Close",IDOK,178,7,50,14,WS_GROUP
+    LTEXT           "Refer to http://msmeter.sourceforge.net/ for inforrmation",IDC_STATIC,7,61,221,11
+END
+
+IDD_CONTROL_DIALOG DIALOGEX 0, 0, 461, 347
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Media storage test application 2.0.5"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Start test",IDC_START,152,193,50,15,WS_DISABLED
+    PUSHBUTTON      "Stop test",IDC_PAUSE,212,193,50,15,WS_DISABLED
+    PUSHBUTTON      "Open control panel",IDC_CONTROLPANEL,152,170,109,20
+    PUSHBUTTON      "Quit",IDOK,152,216,48,15
+    GROUPBOX        "Registered clients :",IDC_STATIC,7,7,114,228
+    LISTBOX         IDC_CLIENTLIST,16,28,98,159,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Select all",IDC_SELECTALL,15,193,40,15
+    PUSHBUTTON      "Clear selection",IDC_CLEARSELECTION,59,193,55,15
+    CONTROL         "Progress1",IDC_DATARATE,"msctls_progress32",PBS_SMOOTH | WS_BORDER,305,28,99,12
+    RTEXT           "Aggregate transfer rate, MB/s",IDC_STATIC,201,28,100,12,SS_CENTERIMAGE
+    LTEXT           "0",IDC_TRL,305,18,8,10
+    RTEXT           "10",IDC_TRH,382,18,22,10
+    CONTROL         "Progress1",IDC_LATENCY,"msctls_progress32",PBS_SMOOTH | WS_BORDER,305,54,99,12
+    RTEXT           "Average latency, ms",IDC_STATIC,231,54,70,12,SS_CENTERIMAGE
+    LTEXT           "0",IDC_ALL,305,44,8,10
+    RTEXT           "10",IDC_ALH,382,44,22,10
+    RTEXT           "",IDC_AVLAT,428,54,26,12,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+    CONTROL         "Progress1",IDC_MAXLATENCY,"msctls_progress32",PBS_SMOOTH | WS_BORDER,305,106,99,12
+    RTEXT           "Maximum latency, s",IDC_STATIC,236,106,65,12,SS_CENTERIMAGE
+    LTEXT           "0",IDC_MLL,305,95,8,10
+    RTEXT           "1",IDC_MLH,383,95,22,10
+    RTEXT           "",IDC_MAXLAT,428,106,26,12,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+    RTEXT           "",IDC_RATE,428,28,26,12,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+    CONTROL         "Progress1",IDC_DATARATE2,"msctls_progress32",PBS_SMOOTH | WS_BORDER,305,80,99,12
+    RTEXT           "Effective transfer rate, MB/s",IDC_STATIC,205,80,96,12,SS_CENTERIMAGE
+    LTEXT           "0",IDC_TRL2,306,70,8,10
+    RTEXT           "10",IDC_TRH2,383,70,22,10
+    RTEXT           "",IDC_RATE2,428,80,26,12,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+    GROUPBOX        "Test control :",IDC_STATIC,138,158,134,54
+    LTEXT           "Index - IP Address",IDC_STATIC,15,17,99,10
+    PUSHBUTTON      "Remove client from list.",IDC_REMOVE,15,216,99,15,WS_DISABLED
+    EDITTEXT        IDC_SENDOUT2,7,238,447,102,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    LTEXT           "",IDC_NORESPONSE,132,7,164,12,SS_CENTERIMAGE | NOT WS_GROUP
+    DEFPUSHBUTTON   "Start test",IDC_START2,303,193,50,15,WS_DISABLED
+    PUSHBUTTON      "Stop test",IDC_PAUSE2,363,193,50,15,WS_DISABLED
+    PUSHBUTTON      "Open script panel",IDC_CONTROLPANEL2,303,170,109,20
+    GROUPBOX        "Script test control :",IDC_STATIC,289,158,134,54
+    CONTROL         "",IDC_RUNCOMMAND,"msctls_progress32",PBS_SMOOTH | WS_BORDER,305,132,99,12
+    RTEXT           "Running Script Command",IDC_STATIC,217,132,84,12,SS_CENTERIMAGE
+    LTEXT           "0",IDC_MLL2,305,122,8,10
+    RTEXT           "100%",IDC_TRH3,382,122,22,10
+    RTEXT           "",IDC_PULSE,422,133,32,12,SS_CENTERIMAGE | SS_SUNKEN | WS_BORDER | NOT WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileDescription", "property2 MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "property2"
+            VALUE "LegalCopyright", "Copyright (C) 2004"
+            VALUE "OriginalFilename", "property2.EXE"
+            VALUE "ProductName", "property2 Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+
+    IDD_CONTROL_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 454
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 340
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ABOUTBOX            "&About Test application ..."
+    IDP_SOCKETS_INIT_FAILED "Windows sockets initialization failed."
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United Kingdom) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CONTROL DIALOGEX 0, 0, 463, 250
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_DISABLED | WS_CAPTION | WS_SYSMENU
+CAPTION "Client control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_TESTFILEPATH,76,7,312,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NOOFFILES,76,24,39,12,ES_AUTOHSCROLL
+    RTEXT           "Test file path:",IDC_STATIC,7,7,64,12,SS_CENTERIMAGE
+    RTEXT           "Number of test files:",IDC_STATIC,7,24,64,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_MAXLENGTH,76,42,39,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAXDELAY,76,61,39,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_WRITE,76,80,39,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RANDOM,76,99,39,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_NCREATE,76,216,39,12,ES_AUTOHSCROLL
+    CONTROL         "Verbose output, normally on.",IDC_VERBOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,261,67,105,10
+    RTEXT           "Maximum length:",IDC_STATIC,7,42,64,12,SS_CENTERIMAGE
+    RTEXT           "Maximum delay:",IDC_STATIC,7,61,64,12,SS_CENTERIMAGE
+    RTEXT           "Write access %ge:",IDC_STATIC,7,80,64,12,SS_CENTERIMAGE
+    RTEXT           "Random access :",IDC_STATIC,7,99,64,12,SS_CENTERIMAGE
+    CONTROL         "Create new test files (restricted to one selected client).",IDC_CREATEFILES,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,15,203,190,12,0,HIDC_CREATEFILES
+    LTEXT           "to use or create. If 0 then all files will be included.",IDC_STATIC,121,24,157,12,SS_CENTERIMAGE
+    LTEXT           "Kbytes, 2 - 2,097,151.",IDC_STATIC,121,43,80,12,SS_CENTERIMAGE
+    LTEXT           "ms, 0 - 10,000.",IDC_STATIC,121,62,80,12,SS_CENTERIMAGE
+    LTEXT           "0% - 100%",IDC_STATIC,121,81,80,12,SS_CENTERIMAGE
+    LTEXT           "0% - 100%",IDC_STATIC,121,99,80,12,SS_CENTERIMAGE
+    LTEXT           "1 - 40,960 (=40 Gbyte), only if 'Create' ticked and number of files > 0.",IDC_STATIC,120,216,229,12,SS_CENTERIMAGE | NOT WS_GROUP
+    GROUPBOX        "Flags",IDC_STATIC,240,49,149,61,BS_CENTER
+    GROUPBOX        "Test file creation",IDC_STATIC,7,190,447,44,BS_CENTER
+    LTEXT           "File size, Mbytes:",IDC_STATIC,15,216,55,12,SS_CENTERIMAGE | NOT WS_GROUP
+    PUSHBUTTON      "Browse",IDC_TESTFILE,403,7,51,12
+    LTEXT           "If verbose output is not enabled no data will be sent to server.",IDC_STATIC,274,76,104,17
+    RTEXT           "Block Sizes :",IDC_STATIC,21,125,50,12,SS_CENTERIMAGE
+    CONTROL         "1K",IDC_BLOCKSIZE1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,77,127,25,10
+    CONTROL         "2K",IDC_BLOCKSIZE2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,127,25,10
+    CONTROL         "4K",IDC_BLOCKSIZE3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,175,127,25,10
+    CONTROL         "8K",IDC_BLOCKSIZE4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,224,127,25,10
+    CONTROL         "16K",IDC_BLOCKSIZE5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,273,127,29,10
+    CONTROL         "32K",IDC_BLOCKSIZE6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,326,127,29,10
+    CONTROL         "64K",IDC_BLOCKSIZE7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,379,127,29,10
+    CONTROL         "128K",IDC_BLOCKSIZE8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,77,144,33,10
+    CONTROL         "256K",IDC_BLOCKSIZE9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,144,33,10
+    CONTROL         "512K",IDC_BLOCKSIZE10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,175,144,33,10
+    CONTROL         "1M    [Not suitable for some OS]",IDC_BLOCKSIZE11,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,224,144,116,10
+    RTEXT           "Direct IO [NFS] :",IDC_STATIC,7,163,64,12,SS_CENTERIMAGE
+    CONTROL         "Enable [Set direct Block Size control for Linux NFS only - DO NOT USE FOR SMB/CIFS]",IDC_DIRECTIO,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,77,164,295,10
+    RTEXT           "Ext Block Sizes :",IDC_STATIC,6,142,65,12,SS_CENTERIMAGE
+END
+
+IDD_FILES DIALOG 0, 0, 364, 167
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_DISABLED | WS_CAPTION | WS_SYSMENU
+CAPTION "System control"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Set output file name and location",IDC_FILESELECT,112,108,139,19
+    CONTROL         "",IDC_SAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,23,13,12
+    CONTROL         " Save summary of results.",IDC_SUMMARY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,47,104,10
+    CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,227,40,122,21
+    GROUPBOX        "Display update interval, sec. :",IDC_STATIC,220,7,137,62
+    GROUPBOX        "Results file :",IDC_STATIC,7,7,167,62
+    LTEXT           "Save detailed results (one line per access event). Note - the files can get very large.",IDC_STATIC,28,23,140,19
+    CTEXT           "1",IDC_STATIC,230,27,10,10
+    CTEXT           "2",IDC_STATIC,247,27,10,10
+    CTEXT           "5",IDC_STATIC,264,27,10,10
+    CTEXT           "10",IDC_STATIC,281,27,10,10
+    CTEXT           "30",IDC_STATIC,298,27,10,10
+    CTEXT           "60",IDC_STATIC,315,27,10,10
+    CTEXT           "120",IDC_STATIC,332,27,14,10
+END
+
+IDD_CONTROL2 DIALOGEX 0, 0, 463, 250
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_POPUP | WS_DISABLED | WS_CAPTION | WS_SYSMENU
+CAPTION "Script control"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_TESTFILEPATH,76,7,312,12,ES_AUTOHSCROLL
+    RTEXT           "Test file path:",-1,7,7,64,12,SS_CENTERIMAGE
+    PUSHBUTTON      "Browse",IDC_TESTFILE,403,7,51,12
+    PUSHBUTTON      "Load",IDOK,75,30,48,15
+    LISTBOX         IDC_SENDOUT2,7,56,447,186,LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_CONTROL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 454
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 243
+    END
+
+    IDD_FILES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 357
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 160
+    END
+
+    IDD_CONTROL2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 454
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 243
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\CtrlApp.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\CtrlApp.ico"
+#endif    // English (United Kingdom) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\CtrlApp.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

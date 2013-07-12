@@ -1,8 +1,20 @@
-﻿Build started 08.07.2013 14:04:16.
-     1>Project "D:\Users\Vokatch\Documents\msmeter2.0.1_win32_source\meter.vcxproj" on node 2 (Build target(s)).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.Cpp.Platform.targets(42,5): error MSB8020: The builds tools for Visual Studio 2010 (Platform Toolset = 'v100') cannot be found. To build using the v100 build tools, either click the Project menu or right-click the solution, and then select "Update VC++ Projects...". Install Visual Studio 2010 to build using the Visual Studio 2010 build tools.
-     1>Done Building Project "D:\Users\Vokatch\Documents\msmeter2.0.1_win32_source\meter.vcxproj" (Build target(s)) -- FAILED.
+﻿Build started 12.07.2013 15:26:27.
+     1>Project "D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\meter.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oy- /D WIN32 /D NDEBUG /D _CONSOLE /D "WIN32 _DEBUG _CONSOLE" /D METER_OS_WIN32 /D METER_FILE_WIN32 /D _FILE_OFFSET_BITS=64 /D _LARGEFILE_SOURCE /D _LARGEFILE64_SOURCE /D _ATL_STATIC_REGISTRY /D _AFXDLL /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt fileAccess.cpp
+         fileAccess.cpp
+     1>fileAccess.cpp(509): warning C4244: '=' : conversion from 'ulong' to 'char', possible loss of data
+     1>d:\users\vokatch\documents\github\msmeter\msmeter2.0.1\fileaccess.cpp(549): warning C4700: uninitialized local variable 'devSum' used
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\Release\meter.exe" /INCREMENTAL /NOLOGO /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\Release\meter.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\Release\meter.lib" /MACHINE:X86 /SAFESEH Release\fileAccess.obj
+         Release\meter.obj
+         Release\network.obj
+         Release\StdAfx.obj
+         Release\timers.obj
+     1>LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/OPT:ICF' specification
+         meter.vcxproj -> D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\Release\meter.exe
+     1>Done Building Project "D:\Users\Vokatch\Documents\GitHub\MSMeter\msmeter2.0.1\meter.vcxproj" (Build target(s)).
 
-Build FAILED.
+Build succeeded.
 
-Time Elapsed 00:00:00.00
+Time Elapsed 00:00:03.18

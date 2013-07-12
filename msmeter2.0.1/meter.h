@@ -8,6 +8,7 @@
 #include <string.h>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include <errno.h>
 #include "stdint.h"
 
@@ -83,3 +84,5 @@ bool openSocket(string SERVER);
 void closeSocket();
 int getNetworkData(char t[256]);
 int setData(const void* lpBuf, int nBufLen);
+
+void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize);

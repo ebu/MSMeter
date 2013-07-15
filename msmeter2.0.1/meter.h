@@ -61,9 +61,9 @@ void delay_ms(int ms);
 void startTimer(TimeStore &return_value);
 double stopTimer(TimeStore &start_value);
 //double read(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double read64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random);
+double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps);
 //double write(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random);
+double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random, double * timeStamps);
 
 ulong my_rand(ulong limit);
 uint64_t my_rand64(uint64_t limit);
@@ -86,3 +86,4 @@ int getNetworkData(char t[256]);
 int setData(const void* lpBuf, int nBufLen);
 
 void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize);
+void printDoubleArray(double * array, ulong arraySize);

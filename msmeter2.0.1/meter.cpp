@@ -24,6 +24,9 @@ int    VERBOSE=0;
 ulong  MAX_SIZE=1<<20;		//     1,048,576 (1M), part of block 
 int    NETWORK=0;
 int    FILE_SHARING=0;
+
+int PER_BLOCK = 1; //if timestamps for every block required
+
 //DPB
 int   DIRECTIO = 0;
 int	   NUMBER_BLOCKTYPE = 7;
@@ -258,19 +261,23 @@ void main_prog(void){
       stopped = 1;
       continue;
     }
-
+	
+	//declaring the timestamps array, also in the case we're not using it
+	double* timeStamps = new double[n_blocks];
 
     startTimer(timer);
-    switch (mode) {
-      case seq_read:
-        access_time=read64(f, start_address64, n_blocks, blocksize, false);  break;
-      case seq_write:
-        access_time=write64(f, start_address64, n_blocks, blocksize, false); break;
-      case rand_read:
-        access_time=read64(f, file_length64, n_blocks, blocksize, true);     break;
-      case rand_write:
-        access_time=write64(f, file_length64, n_blocks, blocksize, true);    break;
-    }
+
+	
+	switch (mode) {
+		 case seq_read:
+			access_time=read64(f, start_address64, n_blocks, blocksize, false, timeStamps);  break;
+		  case seq_write:
+			access_time=write64(f, start_address64, n_blocks, blocksize, false, timeStamps); break;
+		  case rand_read:
+			access_time=read64(f, file_length64, n_blocks, blocksize, true, timeStamps);     break;
+		  case rand_write:
+			access_time=write64(f, file_length64, n_blocks, blocksize, true, timeStamps);    break;
+	}
     t+=stopTimer(timer);
     t-=access_time;
     any_results = 1;
@@ -331,8 +338,12 @@ void main_prog(void){
     // Overall
     p = &max_latency[4][11];
     if ( t > *p) *p = t;
+
+	//deleting the timeStamps array from the memory
+	delete [] timeStamps;
   }
 
+  //end of while loop
 
   if (VERBOSE) {
     if (OUTFILE) outfile.write("\n", 1);

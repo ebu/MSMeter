@@ -290,10 +290,31 @@ void main_prog(void){
     cout<<output_buffer;
 	   
     if (VERBOSE){
-      sprintf(output_buffer,("%f,%f\n"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
-      buf_length=strlen(output_buffer);
-      if (OUTFILE) outfile.write(output_buffer,buf_length);
-      if (NETWORK) netSend(output_buffer,buf_length);
+      //printing basic stuff, change: removed the \n character for the moment
+		sprintf(output_buffer,("%f,%f"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
+		
+		if (PER_BLOCK){
+			sprintf(output_buffer,(","));
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+			//for loop sending all the timestamps
+			for (int block = 0; block < n_blocks; block++) {
+				sprintf(output_buffer,("%f:"), timeStamps[block]);
+				buf_length=strlen(output_buffer);
+				if (OUTFILE) outfile.write(output_buffer,buf_length);
+				if (NETWORK) netSend(output_buffer,buf_length);
+			}
+			
+		}
+		//ending the transmission line
+		sprintf(output_buffer,("\n"));
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
     }
 
     // Accumulate data

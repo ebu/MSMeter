@@ -931,6 +931,7 @@ void CControlDlg::ProcessData(CString s, int i)
 	// eg. - "  0,test002,0,357,64,391.836525,1.849120"
 	// index (3 digit fixed), filename (variable length string), mode (0,1,2,3), total length (Kbyte, DWORD),
 	// block length (Kbyte, int), transfer rate (Mbytes/s, double), latency (ms, double)
+	//there is some other data behind, the array of block timestamps
 	// The index is already passed as a parameter
 	//CString file;
 	int mode, blocksize, t1, t2;
@@ -950,10 +951,15 @@ void CControlDlg::ProcessData(CString s, int i)
 	blocksize = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
 
 	t1 = t2;
-	t2 = s.Find(',', t1 + 1);							//This should be the last ','
+	t2 = s.Find(',', t1 + 1);							//This should be the last ',' new comment: not anymore
 	rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
 
-	latency = atof((LPCTSTR)s.Mid(t2 + 1));
+	t1 = t2;											//new comment: this should be the last ','
+	t2 = s.Find(',', t1 + 1);
+
+	latency = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+	//there still is data after that, in the form of ",timestamptimestamptimestamp"
 
 	//str.Format("%s, %d, %ld, %d, %f, %f",(LPCTSTR)s, mode, length, blocksize, rate, latency);
 	//AfxMessageBox(str);

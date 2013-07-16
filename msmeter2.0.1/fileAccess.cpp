@@ -471,7 +471,7 @@ extern char * buffer;
     CloseHandle(f);
 
 	//for debuggin purpose, prints array
-	printDoubleArray(timeStamps, numberBlocks);
+	//printDoubleArray(timeStamps, numberBlocks);
     return sum;
   }
 
@@ -525,7 +525,7 @@ extern char * buffer;
     CloseHandle(f);
 
 	//for debugging purpose, temporary
-	printDoubleArray(timeStamps, numberBlocks);
+	//printDoubleArray(timeStamps, numberBlocks);
 
     return sum;
   }

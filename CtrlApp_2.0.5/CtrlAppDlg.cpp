@@ -918,60 +918,90 @@ LRESULT CControlDlg::OnApply (WPARAM wParam, LPARAM lParam) {
 
 void CControlDlg::ProcessData(CString s, int i)
 {
+	//TODO: modify function so that behaves as normal when msmeters send "reports" like before, or while it's the first report.
+
 	if (s.GetLength() == 0) return;
 
-	CString str;
-	if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
-		str.Format("%3d,%s\n", i, (LPCTSTR)s);
+	//executed if its only the "classic" way of updating or 1st line
+	if (s.GetAt(0) != ':') {
+
+		CString str;
+		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
+			str.Format("%3d,%s\n", i, (LPCTSTR)s);
+			if(m_fProcessData) {		//Test Flag to start and stop processing 
+				outfile.Write((LPCTSTR)str, str.GetLength());
+			}
+		}
+
+		// Parse the string
+		// eg. - "  0,test002,0,357,64,391.836525,1.849120"
+		// index (3 digit fixed), filename (variable length string), mode (0,1,2,3), total length (Kbyte, DWORD),
+		// block length (Kbyte, int), transfer rate (Mbytes/s, double), latency (ms, double)
+		//there is some other data behind, the array of block timestamps
+		// The index is already passed as a parameter
+		//CString file;
+		int mode, blocksize, t1, t2;
+		DWORD length;
+		double rate, latency;
+
+		t1 = s.Find(',');
+		t2 = s.Find(',', t1 + 1);
+		mode = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);
+		length = atol((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);
+		blocksize = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);							//This should be the last ','
+		rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		latency = atof((LPCTSTR)s.Mid(t2 + 1));
+
+		/*
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);							//This should be the last ',' new comment: not anymore
+		rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;											//new comment: this should be the last ','
+		t2 = s.Find(',', t1 + 1);
+
+		latency = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+		*/
+
+		//there still is data after that, in the form of ",timestamp:timestamp:timestamp"
+
+		//str.Format("%s, %d, %ld, %d, %f, %f",(LPCTSTR)s, mode, length, blocksize, rate, latency);
+		//AfxMessageBox(str);
+		UpdateDisplay(rate, latency, blocksize, length);
+	
 		if(m_fProcessData) {		//Test Flag to start and stop processing 
-			outfile.Write((LPCTSTR)str, str.GetLength());
+			m_Data.AddResult(mode, length, blocksize, rate, latency);
+		}
+
+		
+	} else {
+		//here we have received a string starting with ':', means we'll just write it in the csv file, without
+		//updating any values on the CtrlApp screen
+		CString str;
+		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
+			str.Format("%3d,%s\n", i, (LPCTSTR)s);
+			if(m_fProcessData) {		//Test Flag to start and stop processing 
+				outfile.Write((LPCTSTR)str, str.GetLength());
+			}
 		}
 	}
-	// Parse the string
-	// eg. - "  0,test002,0,357,64,391.836525,1.849120"
-	// index (3 digit fixed), filename (variable length string), mode (0,1,2,3), total length (Kbyte, DWORD),
-	// block length (Kbyte, int), transfer rate (Mbytes/s, double), latency (ms, double)
-	//there is some other data behind, the array of block timestamps
-	// The index is already passed as a parameter
-	//CString file;
-	int mode, blocksize, t1, t2;
-	DWORD length;
-	double rate, latency;
-
-	t1 = s.Find(',');
-	t2 = s.Find(',', t1 + 1);
-	mode = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);
-	length = atol((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);
-	blocksize = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);							//This should be the last ',' new comment: not anymore
-	rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;											//new comment: this should be the last ','
-	t2 = s.Find(',', t1 + 1);
-
-	latency = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	//there still is data after that, in the form of ",timestamptimestamptimestamp"
-
-	//str.Format("%s, %d, %ld, %d, %f, %f",(LPCTSTR)s, mode, length, blocksize, rate, latency);
-	//AfxMessageBox(str);
-	UpdateDisplay(rate, latency, blocksize, length);
-	
-	if(m_fProcessData) {		//Test Flag to start and stop processing 
-		m_Data.AddResult(mode, length, blocksize, rate, latency);
-	}
+	//do we need to left this code to be executed even when only transferring timestamps?
 	m_pTestClient[i]->m_bResponding = TRUE;
 	if((m_nStartAveraging % (m_nSelClients * 10)) == 0) {
 		CheckForResponse();
 	}
+
+	
 }
 
 void CControlDlg::UpdateDisplay(double rate, double latency, int blocksize, DWORD length )

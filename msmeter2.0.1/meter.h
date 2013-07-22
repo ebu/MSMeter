@@ -11,6 +11,7 @@
 #include <cmath>
 #include <errno.h>
 #include "stdint.h"
+#include <sstream>
 
 #if defined (METER_OS_WIN32)
   #include "stdafx.h"

@@ -88,3 +88,6 @@ int setData(const void* lpBuf, int nBufLen);
 
 void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize);
 void printDoubleArray(double * array, ulong arraySize);
+
+string getTimeStampNTP(void);
+int connectNTPSocket(string serverIP);

@@ -987,6 +987,7 @@ void CControlDlg::ProcessData(CString s, int i)
 	} else {
 		//here we have received a string starting with ':', means we'll just write it in the csv file, without
 		//updating any values on the CtrlApp screen
+		//executed when receiving the timestamp or the delta times 
 		CString str;
 		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
 			str.Format("%3d,%s\n", i, (LPCTSTR)s);

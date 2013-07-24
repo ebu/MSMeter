@@ -25,7 +25,9 @@ ulong  MAX_SIZE=1<<20;		//     1,048,576 (1M), part of block
 int    NETWORK=0;
 int    FILE_SHARING=0;
 
-int PER_BLOCK = 1; //if timestamps for every block required
+int PER_BLOCK = 1; //if times for every block are required
+int PER_FRAME = 1; //if times for every frame are required
+int TIMESTAMP = 1; //if a timestamp is required
 
 //DPB
 int   DIRECTIO = 0;
@@ -264,6 +266,7 @@ void main_prog(void){
 	
 	//declaring the timestamps array, also in the case we're not using it
 	double* timeStamps = new double[n_blocks];
+	
 
     startTimer(timer);
 
@@ -295,44 +298,23 @@ void main_prog(void){
 		buf_length=strlen(output_buffer);
 		if (OUTFILE) outfile.write(output_buffer,buf_length);
 		if (NETWORK) netSend(output_buffer,buf_length);
-		//should remove this PER_BLOCK statement
-		/*
-		if (PER_BLOCK){
-			sprintf(output_buffer,("::::::"));
-			buf_length=strlen(output_buffer);
-			if (OUTFILE) outfile.write(output_buffer,buf_length);
-			if (NETWORK) netSend(output_buffer,buf_length);
-			//for loop sending all the timestamps, not all at the same time
-			//need to send max M (=30, hardcoded) at a time
-			for (int block = 0; block < n_blocks; block++) {
-				if ((block%30) == (30-1)) {
-					//sending the end of current transmission and sends the beginning of the next one
-					sprintf(output_buffer,("\n"));
-					buf_length=strlen(output_buffer);
-					if (OUTFILE) outfile.write(output_buffer,buf_length);
-					if (NETWORK) netSend(output_buffer,buf_length);
-					
-					//the ':' at the beginning indicate CtrlApp that it's the data for timestamps
-					sprintf(output_buffer,(":%s,%d,%d,%d,%f,%f,::::::"), file, mode, total_length / 1024, ((blocksize + 1) / 1024), (n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
-					
-					buf_length=strlen(output_buffer);
-					if (OUTFILE) outfile.write(output_buffer,buf_length);
-					if (NETWORK) netSend(output_buffer,buf_length);
-				}
-				sprintf(output_buffer,("%f:"), timeStamps[block]);
-				buf_length=strlen(output_buffer);
-				if (OUTFILE) outfile.write(output_buffer,buf_length);
-				if (NETWORK) netSend(output_buffer,buf_length);
-			}			
-		}
-		*/
-		//ending the transmission line
+		
 		sprintf(output_buffer,("\n"));
 		buf_length=strlen(output_buffer);
 		if (OUTFILE) outfile.write(output_buffer,buf_length);
 		if (NETWORK) netSend(output_buffer,buf_length);
 		
-		//now we append the timestamps
+		//now we append the timestamp (server time) per read/write, if option selected
+		if (TIMESTAMP) {
+			string timeStamp = getTimeStampNTP();
+			//cout << "DEBUG: meter.cpp sending this : " << timeStamp << endl;
+			sprintf(output_buffer,(":%s\n"),timeStamp.c_str());
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+		}
+		
+		//now we append the times per block, if option selected
 		sprintf(output_buffer,(""));
 		if (PER_BLOCK) {
 			stringstream ss;
@@ -340,10 +322,6 @@ void main_prog(void){
 			for (int block = 0; block < n_blocks; block++) {
 				//concatenate string
 				ss << ":" << timeStamps[block];
-				//sprintf(output_buffer,(":%f"), timeStamps[block]);
-				//buf_length=strlen(output_buffer);
-				//if (OUTFILE) outfile.write(output_buffer,buf_length);
-				//if (NETWORK) netSend(output_buffer,buf_length);
 				
 				if ((lineCounter == 10) || (block == (n_blocks-1))) {
 					lineCounter = 0;
@@ -354,12 +332,6 @@ void main_prog(void){
 					if (NETWORK) netSend(output_buffer,buf_length);
 					 
 					ss.str("");
-					//sprintf(output_buffer,(":%s\n"), output_buffer);
-					
-					//sprintf(output_buffer,("\n"));
-					//buf_length=strlen(output_buffer);
-					//if (OUTFILE) outfile.write(output_buffer,buf_length);
-					//if (NETWORK) netSend(output_buffer,buf_length);
 				}
 				lineCounter++;
 			}

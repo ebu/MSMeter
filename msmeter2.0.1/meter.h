@@ -62,9 +62,9 @@ void delay_ms(int ms);
 void startTimer(TimeStore &return_value);
 double stopTimer(TimeStore &start_value);
 //double read(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps);
+double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps);
 //double write(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random, double * timeStamps);
+double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random, int frameSize, double * timeStamps);
 
 ulong my_rand(ulong limit);
 uint64_t my_rand64(uint64_t limit);

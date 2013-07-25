@@ -115,10 +115,11 @@ extern char * buffer;
       length64= (uint64_t)lseek(f,0,2);
 	}
 
-  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps) {
+  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double  sum=0.0;
     cout<<"Unix read\t";
+    
 
     fillBuffer(buffer,blockSize);
 
@@ -130,9 +131,12 @@ extern char * buffer;
         double tempTimerValue = 0.0;
 		tempTimerValue = stopTimer(startTime);
         sum+=tempTimerValue;
-
+       
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -143,16 +147,19 @@ extern char * buffer;
         double tempTimerValue = 0.0;
 		tempTimerValue = stopTimer(startTime);
         sum+=tempTimerValue;
-
+        
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     close(f);
     return sum;
   }
 
-  double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps) {
+  double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double  sum=0.0;
     cout<<"Unix write\t";
@@ -170,7 +177,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -184,7 +194,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     startTimer(startTime);
@@ -423,7 +436,7 @@ extern char * buffer;
     return sum;
   }
 
-  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps) { 
+  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) { 
     TimeStore startTime;
     double sum=0.0;
     cout<<"Win32 read\t";
@@ -449,7 +462,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -465,7 +481,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     CloseHandle(f);
@@ -476,7 +495,7 @@ extern char * buffer;
   }
 
 
-	double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, double * timeStamps) {
+	double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double sum=0.0;
     cout<<"Win32 write\t";
@@ -502,7 +521,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) )
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
 
       }
     }
@@ -519,7 +541,10 @@ extern char * buffer;
         sum+=tempTimerValue;
 
 		//fills the timeStamps array
-		timeStamps[block] = tempTimerValue;
+		//last (if incomplete) frame is dropped
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) )
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     CloseHandle(f);

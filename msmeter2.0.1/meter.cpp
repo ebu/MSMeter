@@ -26,7 +26,6 @@ int    NETWORK=0;
 int    FILE_SHARING=0;
 
 int PER_BLOCK = 1; //if times for every block are required
-int PER_FRAME = 1; //if times for every frame are required
 int TIMESTAMP = 1; //if a timestamp is required
 
 //DPB
@@ -265,7 +264,16 @@ void main_prog(void){
     }
 	
 	//declaring the timestamps array, also in the case we're not using it
-	double* timeStamps = new double[n_blocks];
+	//for the moment, the frame size is given by a preprocessor command
+	//could be modified to be dynamic
+	int frameSize = 20;
+	int n_frames = floor((double)n_blocks/frameSize); //acts as a floor function
+	
+	
+	double* timeStamps = new double[n_frames];
+	//initializing all values of timeStamps to zero
+	//try also with double array[100] = {0}
+	for (int erz = 0; erz < n_frames; erz++) timeStamps[erz] = 0;
 	
 
     startTimer(timer);
@@ -273,13 +281,13 @@ void main_prog(void){
 	
 	switch (mode) {
 		 case seq_read:
-			access_time=read64(f, start_address64, n_blocks, blocksize, false, timeStamps);  break;
+			access_time=read64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps);  break;
 		  case seq_write:
-			access_time=write64(f, start_address64, n_blocks, blocksize, false, timeStamps); break;
+			access_time=write64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps); break;
 		  case rand_read:
-			access_time=read64(f, file_length64, n_blocks, blocksize, true, timeStamps);     break;
+			access_time=read64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);     break;
 		  case rand_write:
-			access_time=write64(f, file_length64, n_blocks, blocksize, true, timeStamps);    break;
+			access_time=write64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);    break;
 	}
     t+=stopTimer(timer);
     t-=access_time;
@@ -314,16 +322,16 @@ void main_prog(void){
 			if (NETWORK) netSend(output_buffer,buf_length);
 		}
 		
-		//now we append the times per block, if option selected
+		//now we append the times per frame, if option selected
 		sprintf(output_buffer,(""));
 		if (PER_BLOCK) {
 			stringstream ss;
 			int lineCounter = 0;
-			for (int block = 0; block < n_blocks; block++) {
+			for (int frame = 0; frame < n_frames; frame++) {
 				//concatenate string
-				ss << ":" << timeStamps[block];
+				ss << ":" << timeStamps[frame];
 				
-				if ((lineCounter == 10) || (block == (n_blocks-1))) {
+				if ((lineCounter == 10) || (frame == (n_frames-1))) {
 					lineCounter = 0;
 					ss << "\n";
 					sprintf(output_buffer, ("%s"), ss.str().c_str());

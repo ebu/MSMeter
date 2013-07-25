@@ -66,15 +66,24 @@ string getTimeStampNTP(void) {
 		//the received info is 48 bytes, the last 8 bytes (64 bits) are the ones that
 		//interest us
 		
+		//seconds (first 32 bits)
 		unsigned int seconds = 0;
 		for (unsigned n = 0; n < 4; n++) {
 			seconds = (seconds << 8) + incomingDataBufferNTP[ n + 40 ];
 		}
+		//second fraction (last 32 bits), we then have to convert it in microseconds
+		unsigned int second_fraction = 0;
+		for (unsigned n = 0; n < 4; n++) {
+			second_fraction = (second_fraction << 8) + incomingDataBufferNTP[ n + 44 ];
+		}
+		int microseconds = (long long) second_fraction * 1000000 / 4294967296;
 		
 		//cout << "DEBUG: NTP.cpp time : " << seconds << endl;
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
+		ssNTP << "s";
+		ssNTP << microseconds;
 		
 		return ssNTP.str();
 	

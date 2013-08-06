@@ -997,6 +997,7 @@ void CControlDlg::ProcessData(CString s, int i)
 		}
 	}
 	//do we need to left this code to be executed even when only transferring timestamps?
+	//1st check, leave it as it is
 	m_pTestClient[i]->m_bResponding = TRUE;
 	if((m_nStartAveraging % (m_nSelClients * 10)) == 0) {
 		CheckForResponse();

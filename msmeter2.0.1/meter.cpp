@@ -275,6 +275,11 @@ void main_prog(void){
 	//try also with double array[100] = {0}
 	for (int erz = 0; erz < n_frames; erz++) timeStamps[erz] = 0;
 	
+	//getting the timestamp
+	string timeStamp = "";
+	if (TIMESTAMP) {
+		timeStamp = getTimeStampNTP();
+	}
 
     startTimer(timer);
 
@@ -314,7 +319,6 @@ void main_prog(void){
 		
 		//now we append the timestamp (server time) per read/write, if option selected
 		if (TIMESTAMP) {
-			string timeStamp = getTimeStampNTP();
 			//cout << "DEBUG: meter.cpp sending this : " << timeStamp << endl;
 			sprintf(output_buffer,(":%s\n"),timeStamp.c_str());
 			buf_length=strlen(output_buffer);

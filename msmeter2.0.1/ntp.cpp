@@ -2,7 +2,7 @@
 
 #include "meter.h"
 
-#define SERVERIP "127.0.0.1"
+#define SERVERIP "ch.pool.ntp.org"
 #define PORTNUMBER 123
 
 using namespace std;
@@ -10,10 +10,90 @@ using namespace std;
 
 #if defined (METER_OS_WIN32)
 
+CAsyncSocket CsockNTP;
+bool connected = false;
+
 string getTimeStampNTP(void) {
-	
-	return "23849184923092";
+	string failed = "no ntp time";
+
+	if (!connected) {
+		int checkk = connectNTPSocket(SERVERIP);
+		if (checkk == -1) return failed;//in case of no connection this is the timestamp
+		connected = true;
+	}
+	//connected
+
+	//message to send
+	char msgNTP[1];
+	msgNTP[0] = 0x23;
+	int lenNTP = 48;
+
+	//sending
+	int t;
+    if (CsockNTP.Send(msgNTP, lenNTP + 1) == -1){
+		//should we reconnect?
+		connected = false;
+		cout << "failed to send ntp" << endl;
+		//return failed;
+    }
+
+	int receivedBytesNTP;
+	char incomingDataBufferNTP[60];
+	receivedBytesNTP = CsockNTP.Receive(incomingDataBufferNTP, 61);
+
+	cout << "nb of received bytes from NTP : " << receivedBytesNTP << endl;
+
+	if (receivedBytesNTP == 0) return failed;	//host shut down
+	if (receivedBytesNTP ==-1) return failed;	//error
+
+    
+	//parsing the results
+		//the received info is 48 bytes, the last 8 bytes (64 bits) are the ones that
+		//interest us
+		
+		//seconds (first 32 bits)
+		unsigned int seconds = 0;
+		for (unsigned n = 0; n < 4; n++) {
+			seconds = (seconds << 8) + incomingDataBufferNTP[ n + 40 ];
+		}
+		//second fraction (last 32 bits), we then have to convert it in microseconds
+		unsigned int second_fraction = 0;
+		for (unsigned n = 0; n < 4; n++) {
+			second_fraction = (second_fraction << 8) + incomingDataBufferNTP[ n + 44 ];
+		}
+		int microseconds = (long long) second_fraction * 1000000 / 4294967296;
+		
+		//cout << "DEBUG: NTP.cpp time : " << seconds << endl;
+		
+		stringstream ssNTP;
+		ssNTP << seconds;
+		ssNTP << "s";
+		ssNTP << microseconds;
+		
+		return ssNTP.str();
 }
+
+int connectNTPSocket(string serverIP) {
+    int last_error;
+    AfxWinInit(::GetModuleHandle(NULL), NULL,::GetCommandLine(), 0);
+    AfxSocketInit();
+
+    CsockNTP.Create(123, SOCK_DGRAM);
+    CsockNTP.Connect(serverIP.c_str(),123);
+    while ((last_error = CsockNTP.GetLastError()) == WSAEWOULDBLOCK) {
+      CsockNTP.Connect(serverIP.c_str(),123);
+    }
+    if (!last_error){
+      cout<<"Failed to connect";
+	  connected = false;
+      return -1;
+    }
+    cout << "Opened connection OK" << endl;
+	connected = true;
+    return 0;
+}
+
+
 
 
 #elif defined (METER_OS_LINUX)

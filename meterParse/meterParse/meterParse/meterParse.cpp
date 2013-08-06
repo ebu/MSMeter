@@ -28,6 +28,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	parseARead(file, array);
 	process(array, 2, 20);
 	printVector(array);
+	array.clear();
 	parseARead(file, array);
 	printVector(array);
 	//array.clear();
@@ -64,7 +65,6 @@ int parseARead(ifstream &file, vector<double>& array) {
 		getline(file, line);
 		cout << "First line *" << line << "*" << endl;
 
-		
 		
 		//reading the rest
 		while ( file.good() ){
@@ -200,4 +200,20 @@ void printVector(vector<double>& array) {
 double timeToSpeed(double time, int data) {
 	return ((data*1000) / (time*1024*1024));
 }
+
+class ClientStack {
+
+public:
+
+	void addLine(string line){
+
+	}
+
+	bool writeToFile(){
+
+	}
+
+
+
+};
 

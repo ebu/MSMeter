@@ -522,7 +522,7 @@ extern char * buffer;
 
 		//fills the timeStamps array
 		//last (if incomplete) frame is dropped
-		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) )
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) ) {
 			timeStamps[block/frameSize] += tempTimerValue;
 		}
 
@@ -542,7 +542,7 @@ extern char * buffer;
 
 		//fills the timeStamps array
 		//last (if incomplete) frame is dropped
-		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) )
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) ) {
 			timeStamps[block/frameSize] += tempTimerValue;
 		}
       }

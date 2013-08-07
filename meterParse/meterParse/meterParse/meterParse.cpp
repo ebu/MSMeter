@@ -19,9 +19,24 @@ void printVector(vector<double>& array);
 void deltaTimeToReferencedTime(vector<double>& array);
 double timeToSpeed(double time, int data);
 
+class ClientStack {
+public:
+	ClientStack(int c_id);
+	void addLine(string line);
+	bool writeToFile();
+	//parameters
+	int id;
+	int blockSize;
+	int frameSize;
+	bool random;
+	double startTime;
+	double endTime;
+};
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	/*
 	string filename = "results.csv";
 	ifstream file (filename);
 	vector<double> array;
@@ -34,9 +49,64 @@ int _tmain(int argc, _TCHAR* argv[])
 	//array.clear();
 	//deltaTimeToReferencedTime(array);
 	//processTimeDependent(array, 2, 3);
+	*/
+	string filename = "results2.csv";
+	ifstream file (filename);
+	parseFileGiveToStacks(file);
+
+
 
 	return 0;
 }
+
+//reads line by line, "sends" the lines to the right instance of client
+int parseFileGiveToStacks (ifstream &file) {
+	vector<ClientStack> clients;
+	if (file.is_open()){
+		string line;
+
+
+		while (file.good()){
+			getline(file, line);
+
+			//3rd digit gives us the client id
+			stringstream ss(line);
+			ss.get; ss.get();
+			int clientID;
+			ss >> clientID;
+
+			//check if client has a stack already
+			bool found = false;
+			ClientStack* temp;
+			for(vector<ClientStack>::iterator it = clients.begin(); it != clients.end(); ++it) {
+				
+				if ((*it).id == clientID){
+					found = true;
+					temp = &(*it);
+					break;
+				}
+
+			}
+			if (!found){
+				//create new instance of ClientStack
+				ClientStack tempClientStack(clientID);
+				clients.push_back(tempClientStack);
+				temp = &tempClientStack;
+			}
+
+			//give the string line to the clientStack instance
+			(*temp).addLine(line);
+
+		}
+
+
+	} else {
+		cout << "unable to open file" << endl;
+		return 1;
+	}
+}
+
+
 
 int readAndPrint(string name) {
 
@@ -201,19 +271,7 @@ double timeToSpeed(double time, int data) {
 	return ((data*1000) / (time*1024*1024));
 }
 
-class ClientStack {
 
-public:
-
-	void addLine(string line){
-
-	}
-
-	bool writeToFile(){
-
-	}
-
-
-
-};
-
+ClientStack::ClientStack(int c_id) {
+	int id = c_id;
+}

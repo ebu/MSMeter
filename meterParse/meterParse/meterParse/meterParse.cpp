@@ -19,19 +19,24 @@ void printVector(vector<double>& array);
 void deltaTimeToReferencedTime(vector<double>& array);
 double timeToSpeed(double time, int data);
 
+int parseFileGiveToStacks (ifstream &file);
+
 class ClientStack {
 public:
-	ClientStack(int c_id);
+	ClientStack();
 	void addLine(string line);
-	bool writeToFile();
+	bool writeToFile(double time);
 	//parameters
 	int id;
 	int blockSize;
 	int frameSize;
-	bool random;
-	double startTime;
-	double endTime;
+	int mode;
+	int currentTime;
+	string filename;
 };
+
+//output file stream
+ofstream output;
 
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -50,6 +55,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	//deltaTimeToReferencedTime(array);
 	//processTimeDependent(array, 2, 3);
 	*/
+
+	//output file preparation
+	
+	output.open ("output.csv");
+
 	string filename = "results2.csv";
 	ifstream file (filename);
 	parseFileGiveToStacks(file);
@@ -71,15 +81,15 @@ int parseFileGiveToStacks (ifstream &file) {
 
 			//3rd digit gives us the client id
 			stringstream ss(line);
-			ss.get; ss.get();
+			ss.get(); ss.get();
 			int clientID;
 			ss >> clientID;
 
 			//check if client has a stack already
 			bool found = false;
-			ClientStack* temp;
+			ClientStack* temp = NULL;
 			for(vector<ClientStack>::iterator it = clients.begin(); it != clients.end(); ++it) {
-				
+				cout << "Searching : " << (*it).id << endl;
 				if ((*it).id == clientID){
 					found = true;
 					temp = &(*it);
@@ -89,12 +99,17 @@ int parseFileGiveToStacks (ifstream &file) {
 			}
 			if (!found){
 				//create new instance of ClientStack
-				ClientStack tempClientStack(clientID);
-				clients.push_back(tempClientStack);
-				temp = &tempClientStack;
+				cout << "creating instance for id : " << clientID << endl;
+				ClientStack *tempClientStack = new ClientStack();
+				tempClientStack->id = clientID;
+				cout << "created instance, id is : " << (*tempClientStack).id << endl;
+				clients.push_back(*tempClientStack);
+				temp = tempClientStack;
+				cout << "trying to access id from pointer : " << (*temp).id << endl;
 			}
 
 			//give the string line to the clientStack instance
+			
 			(*temp).addLine(line);
 
 		}
@@ -156,8 +171,6 @@ int parseARead(ifstream &file, vector<double>& array) {
 				if (ss.peek() == ':') ss.ignore();
 			}
 
-
-			
 
 		}
 
@@ -272,6 +285,79 @@ double timeToSpeed(double time, int data) {
 }
 
 
-ClientStack::ClientStack(int c_id) {
-	int id = c_id;
+ClientStack::ClientStack() {
+	//nothing initialised in constructor
+}
+
+void ClientStack::addLine(string line) {
+	cout << "Message from clientstack with id " << id << " : {" << line << "}" << endl;
+	stringstream ss(line);
+	ss.get(); ss.get(); ss.get(); ss.get(); //"removing" first 4 irrelevant chars
+
+	//adding a line
+	//case 1: it is the main (initialising line)
+	if (line.at(4) != ':'){
+		cout << "init line for stack " << id << endl;
+
+		int t1, t2;
+		int length;
+		double rate, latency;
+
+		t1 = line.find(',');
+		t2 = line.find(',', t1 + 1);
+		this->mode = atoi((line.substr(t1 + 1, t2 - t1 - 1)).c_str());
+		cout << "mode " << this->mode << endl;
+		
+		t1 = t2;
+		t2 = line.find(',', t1 + 1);
+		length = atol((line.substr(t1 + 1, t2 - t1 - 1)).c_str());
+		cout << "length : " << length << endl;
+
+		//the second time i'm doing length reading, dirty hack, need to investigate
+		//but it works
+		t1 = t2;
+		t2 = line.find(',', t1 + 1);
+		length = atol((line.substr(t1 + 1, t2 - t1 - 1)).c_str());
+		cout << "length : " << length << endl;
+
+		t1 = t2;
+		t2 = line.find(',', t1 + 1);
+		blockSize = atoi((line.substr(t1 + 1, t2 - t1 - 1)).c_str());
+		cout << "blocksize " << blockSize << endl;
+
+		t1 = t2;
+		t2 = line.find(',', t1 + 1);						//This should be the last ','
+		rate = atof((line.substr(t1 + 1, t2 - t1 - 1)).c_str());
+		cout << "rate " << rate << endl;
+
+		latency = atof((line.substr(t2 + 1)).c_str());
+		cout << "latency " << latency << endl;
+
+
+	//case 2: is the NTP line
+	} else if(line.at(5) == 't'){
+		//cout << "NTP line for stack " << id << endl;
+		ss.get(); ss.get();
+		string ntpMicroSec;
+		ss >> ntpMicroSec;
+		//cout << "NTP value : " << ntpMicroSec << endl;
+
+	//case 3: it is the delta times "arrays"
+	} else {
+		cout << "delta times arrays for stack " << id << endl;
+		double value;
+		vector<double> dTimeArray;
+		ss.get();
+		while (ss >> value){
+			(dTimeArray).push_back(value);
+			if (ss.peek() == ':') ss.ignore();
+			writeToFile(value);
+		}
+	}
+}
+
+bool ClientStack::writeToFile(double time) {
+
+	output << id << "," << mode << "," << blockSize << "," << time << endl;
+	return true;
 }

@@ -26,7 +26,7 @@ int    NETWORK=0;
 int    FILE_SHARING=0;
 
 int PER_BLOCK = 1; //if times for every block are required
-int TIMESTAMP = 1; //if a timestamp is required
+int TIMESTAMP = 0; //if a timestamp is required
 
 //DPB
 int   DIRECTIO = 0;
@@ -264,10 +264,16 @@ void main_prog(void){
     }
 	
 	//declaring the timestamps array, also in the case we're not using it
-	//for the moment, the frame size is given by a preprocessor command
+	//for the moment, the frame size is static
 	//could be modified to be dynamic
-	int frameSize = 20;
-	int n_frames = floor((double)n_blocks/frameSize); //acts as a floor function
+	int frameSizeInKB = 64;
+	if (frameSizeInKB < blocksize){
+		frameSizeInKB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	}
+	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
+	//frameSizeInKb modulo blocksize should be equal to 0
+	int frameSize = floor(frameSizeInKB/blocksize);//it is essentially the blocksPerFrame value
+	int n_frames = floor((double)n_blocks/frameSize);
 	
 	
 	double* timeStamps = new double[n_frames];
@@ -320,7 +326,7 @@ void main_prog(void){
 		//now we append the timestamp (server time) per read/write, if option selected
 		if (TIMESTAMP) {
 			//cout << "DEBUG: meter.cpp sending this : " << timeStamp << endl;
-			sprintf(output_buffer,(":%s\n"),timeStamp.c_str());
+			sprintf(output_buffer,(":t%s\n"),timeStamp.c_str());
 			buf_length=strlen(output_buffer);
 			if (OUTFILE) outfile.write(output_buffer,buf_length);
 			if (NETWORK) netSend(output_buffer,buf_length);
@@ -329,6 +335,12 @@ void main_prog(void){
 		//now we append the times per frame, if option selected
 		sprintf(output_buffer,(""));
 		if (PER_BLOCK) {
+			//sending the frame size as a line
+			sprintf(output_buffer, (":f%d\n"), frameSize);
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+
 			stringstream ss;
 			int lineCounter = 0;
 			for (int frame = 0; frame < n_frames; frame++) {
@@ -1003,6 +1015,10 @@ int Countfiles() {
   }
 
   return count;
+}
+
+string getServerAdress() {
+	return SERVER;
 }
 
 

@@ -8,16 +8,17 @@
 using namespace std;
 
 
+
 #if defined (METER_OS_WIN32)
 
 CAsyncSocket CsockNTP;
 bool connected = false;
 
 string getTimeStampNTP(void) {
-	string failed = "no ntp time";
+	string failed = "0";
 
 	if (!connected) {
-		int checkk = connectNTPSocket(SERVERIP);
+		int checkk = connectNTPSocket(getServerAdress());
 		if (checkk == -1) return failed;//in case of no connection this is the timestamp
 		connected = true;
 	}
@@ -67,7 +68,7 @@ string getTimeStampNTP(void) {
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
-		ssNTP << "s";
+		//ssNTP << "";
 		ssNTP << microseconds;
 		
 		return ssNTP.str();
@@ -111,10 +112,10 @@ bool connected = false;
 //returns string containing the timestamp
 string getTimeStampNTP(void) {
 	
-	string failed = "no ntp time";
+	string failed = "0";
 	
 	if (!connected) {
-		int checkk = connectNTPSocket(SERVERIP);
+		int checkk = connectNTPSocket(getServerAdress());
 		cout << "DEBUG: ntp.cpp checkk value for connection of socket : " << checkk << endl;
 		if (checkk == -1) return failed;//in case of no connection this is the timestamp
 		connected = true;
@@ -162,7 +163,7 @@ string getTimeStampNTP(void) {
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
-		ssNTP << "s";
+		//ssNTP << "";
 		ssNTP << microseconds;
 		
 		return ssNTP.str();

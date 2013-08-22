@@ -26,7 +26,7 @@ int    NETWORK=0;
 int    FILE_SHARING=0;
 
 int PER_BLOCK = 1; //if times for every block are required
-int TIMESTAMP = 0; //if a timestamp is required
+int TIMESTAMP = 1; //if a timestamp is required
 
 //DPB
 int   DIRECTIO = 0;
@@ -56,6 +56,8 @@ int started=0;
 
 int main(int argc, char* argv[], char* envp[]) {
   int nRetCode=0;
+
+  //Improve number generation: when 2 instances are run at the same time, the rand value gives the same
   srand((unsigned)time(NULL));    // Randomise random number generator
 
   switch (initialise(argc, argv)){    // Initialise parameters
@@ -266,13 +268,13 @@ void main_prog(void){
 	//declaring the timestamps array, also in the case we're not using it
 	//for the moment, the frame size is static
 	//could be modified to be dynamic
-	int frameSizeInKB = 64;
-	if (frameSizeInKB < blocksize){
-		frameSizeInKB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	int frameSizeInB = 65536;
+	if (frameSizeInB < blocksize){
+		frameSizeInB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
 	}
 	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
 	//frameSizeInKb modulo blocksize should be equal to 0
-	int frameSize = floor(frameSizeInKB/blocksize);//it is essentially the blocksPerFrame value
+	int frameSize = floor(frameSizeInB/blocksize);//it is essentially the blocksPerFrame value
 	int n_frames = floor((double)n_blocks/frameSize);
 	
 	
@@ -1018,7 +1020,8 @@ int Countfiles() {
 }
 
 string getServerAdress() {
-	return SERVER;
+	//return SERVER;
+	return "192.168.0.201";
 }
 
 

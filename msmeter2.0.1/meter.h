@@ -79,6 +79,8 @@ int stop(void);
 int scan_param(int c, char* v[], int start_index);
 int netSend(const void* lpBuf, int nBufLen);
 
+string getServerAdress(void);
+
 void openFile(FileRef &f, string filename, bool directio);
 void getFileLength64(FileRef &f, uint64_t &length64);
 bool openSocket(string SERVER);

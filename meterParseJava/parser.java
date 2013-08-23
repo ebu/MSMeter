@@ -19,6 +19,7 @@ public class parser {
 			try {
 				String csvfileName = args[0];
 				output = new MeterOutput(args[1]);
+				output.write("CLIENTID,FILENAME,MODE,BLOCKSIZE,BLOCKSINFRAME,TIME,DTIME");
 				readAndParse(csvfileName);
 				output.close();
 				System.out.println("done.");

@@ -15,8 +15,6 @@ public class ReadWrite {
 	private int blockSize;
 	private String filename;
 	private int mode;
-	private double rate;
-	private double delay;
 	private int frameSize;
 	private BigInteger currentTime;	//used to calculate time for every frame
 	
@@ -42,18 +40,18 @@ public class ReadWrite {
 		filename = csvs[0];
 		mode = Integer.parseInt(csvs[1]);
 		blockSize = Integer.parseInt(csvs[3]);
-		rate = Double.parseDouble(csvs[4]);
-		delay = Double.parseDouble(csvs[5]);
-		//System.out.println(filename + " - " + mode + " - " + blockSize);
+		Double.parseDouble(csvs[4]);
+		Double.parseDouble(csvs[5]);
 	}
 	
 	//line containing NTP timestamp
 	//  2,:t3567248571.582627
-	private void lineProcessNTP (String line){
+	private void lineProcessNTP (String line) throws IOException{
 		//System.out.println(clientId + "  ntp : " + line);
 		//if first time
 		if (!parser.zeroTimeInit){
 			parser.zeroTime = new BigInteger(line.substring(6));
+			parser.output.write("NTP time of start - " + parser.zeroTime);
 			parser.zeroTimeInit = true;
 		}
 		//current time = (time from line) - (the zero time in parser's class)
@@ -94,18 +92,14 @@ public class ReadWrite {
 	//will prepare the line to print with the time etc...
 	private void printDataToFile(double dTime) throws IOException{
 		
-		parser.output.write(clientId + "," + mode + "," + blockSize + "," + frameSize + "," + currentTime + "," + dTime);
+		parser.output.write(clientId + "," + filename + "," + mode + "," + blockSize + "," + frameSize + "," + currentTime + "," + dTime);
 		
 		Integer dTimeInMicrosec = (int)(dTime*1000);
 		BigInteger toAdd = BigInteger.valueOf(dTimeInMicrosec.intValue());
 		currentTime = currentTime.add(toAdd);
 	}
 	
-	//prints data if the read or write was not partitioned in frames
-	private void printSingleLineData(){
-		
-	}
-
+	
 	
 	//getters
 	public int getClientId() {

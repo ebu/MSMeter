@@ -45,7 +45,8 @@ public class parser {
 		while ((line = br.readLine()) != null) {
 			
 			if (line.charAt(0) == 'R'){
-				break;//this is to stop reading the file for the Results Summary
+				break;	//this is to stop reading the file for the Results Summary
+						//we do not need them
 			}
 			
 			int clientId = Integer.parseInt((line.substring(0, 3)).trim());

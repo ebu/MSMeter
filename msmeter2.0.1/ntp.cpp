@@ -2,7 +2,7 @@
 
 #include "meter.h"
 
-#define SERVERIP "ch.pool.ntp.org"
+//#define SERVERIP "ch.pool.ntp.org"
 #define PORTNUMBER 123
 
 using namespace std;
@@ -15,16 +15,16 @@ CAsyncSocket CsockNTP;
 bool connected = false;
 
 string getTimeStampNTP(void) {
-	string failed = "0";
+	string failed = "0";//timestamp in case of failure
 
 	if (!connected) {
 		int checkk = connectNTPSocket(getServerAdress());
-		if (checkk == -1) return failed;//in case of no connection this is the timestamp
+		if (checkk == -1) return failed;
 		connected = true;
 	}
 	//connected
 
-	//message to send
+	//message to send to the ntp server
 	char msgNTP[1];
 	msgNTP[0] = 0x23;
 	int lenNTP = 48;
@@ -42,15 +42,16 @@ string getTimeStampNTP(void) {
 	char incomingDataBufferNTP[60];
 	receivedBytesNTP = CsockNTP.Receive(incomingDataBufferNTP, 61);
 
-	cout << "nb of received bytes from NTP : " << receivedBytesNTP << endl;
+	//cout << "nb of received bytes from NTP : " << receivedBytesNTP << endl;
 
 	if (receivedBytesNTP == 0) return failed;	//host shut down
 	if (receivedBytesNTP ==-1) return failed;	//error
 
     
-	//parsing the results
-		//the received info is 48 bytes, the last 8 bytes (64 bits) are the ones that
-		//interest us
+		//parsing the results
+		//the received info is 48 bytes, the last 8 bytes (64 bits)
+		// are : 4 bytes of "seconds"
+		//		 4 bytes of "second fraction"
 		
 		//seconds (first 32 bits)
 		unsigned int seconds = 0;
@@ -68,7 +69,7 @@ string getTimeStampNTP(void) {
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
-		//ssNTP << "";
+		//ssNTP << ""; separator value not needed
 		ssNTP << microseconds;
 		
 		return ssNTP.str();
@@ -144,8 +145,9 @@ string getTimeStampNTP(void) {
 		if (receivedBytesNTP ==-1) return failed;	//error
 		
 		//parsing the results
-		//the received info is 48 bytes, the last 8 bytes (64 bits) are the ones that
-		//interest us
+		//the received info is 48 bytes, the last 8 bytes (64 bits)
+		// are : 4 bytes of "seconds"
+		//		 4 bytes of "second fraction"
 		
 		//seconds (first 32 bits)
 		unsigned int seconds = 0;
@@ -163,7 +165,7 @@ string getTimeStampNTP(void) {
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
-		//ssNTP << "";
+		//ssNTP << ""; separator
 		ssNTP << microseconds;
 		
 		return ssNTP.str();

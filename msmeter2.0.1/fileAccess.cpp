@@ -306,8 +306,8 @@ extern char * buffer;
 	  //printf("File Length  %llu size = %ld\n", length64, size);
   }
 
-  //version with essentially code testing. Takes timestamps by frame or by block, does data crunching
-  //not called
+  //version with essentially code testing. Takes timestamps by frame or by block, does some basic data crunching
+  //not called, and to be removed
   double read64_old(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) { 
     TimeStore startTime;
     double sum=0.0;
@@ -489,8 +489,6 @@ extern char * buffer;
     }
     CloseHandle(f);
 
-	//for debuggin purpose, prints array
-	//printDoubleArray(timeStamps, numberBlocks);
     return sum;
   }
 
@@ -548,9 +546,6 @@ extern char * buffer;
       }
     }
     CloseHandle(f);
-
-	//for debugging purpose, temporary
-	//printDoubleArray(timeStamps, numberBlocks);
 
     return sum;
   }
@@ -642,7 +637,7 @@ void fillBuffer(char * buffer, ulong bufferSize) {
 }
 
 //uses an array of times to calculate some basic stats and prints them on screen
-//function used for testing purposes only
+//function used for testing and debugging purposes only
 void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize) {
 	//printing the array
 	cout << "***Time per frame in ms***" << endl;
@@ -688,6 +683,8 @@ void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int bloc
 	cout << "--------------------------" << endl;
 }
 
+
+//Function for testing and debugging only
 void printDoubleArray(double * array, ulong arraySize) {
 	for (int i=0; i < arraySize; i++) cout<<array[i]<<" ";
 	cout << endl;

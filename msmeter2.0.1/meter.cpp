@@ -25,8 +25,11 @@ ulong  MAX_SIZE=1<<20;		//     1,048,576 (1M), part of block
 int    NETWORK=0;
 int    FILE_SHARING=0;
 
+//MS Meter 3 addition
+//TODO: initialise these parameters through CtrlApp command
 int PER_BLOCK = 1; //if times for every block are required
 int TIMESTAMP = 1; //if a timestamp is required
+int FRAMESIZEB = 65536;
 
 //DPB
 int   DIRECTIO = 0;
@@ -60,8 +63,8 @@ int main(int argc, char* argv[], char* envp[]) {
   //Improve number generation: when 2 instances are run at the same time, the rand value gives the same
   srand((unsigned)time(NULL));    // Randomise random number generator
 
-  switch (initialise(argc, argv)){    // Initialise parameters
-    case 0 : // Error in intialisation
+  switch (initialise(argc, argv)){     //Initialise parameters
+    case 0 : //Error in intialisation
       cout << "Incorrect initialisation\n\n";
       return nRetCode=1;
     case 1 : // Error in parameters
@@ -268,9 +271,8 @@ void main_prog(void){
 	//declaring the timestamps array, also in the case we're not using it
 	//for the moment, the frame size is static
 	//could be modified to be dynamic
-	int frameSizeInB = 65536;
-	if (frameSizeInB < blocksize){
-		frameSizeInB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	if (FRAMESIZEINB < blocksize){
+		FRAMESIZEINB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
 	}
 	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
 	//frameSizeInKb modulo blocksize should be equal to 0
@@ -280,7 +282,6 @@ void main_prog(void){
 	
 	double* timeStamps = new double[n_frames];
 	//initializing all values of timeStamps to zero
-	//try also with double array[100] = {0}
 	for (int erz = 0; erz < n_frames; erz++) timeStamps[erz] = 0;
 	
 	//getting the timestamp
@@ -327,7 +328,6 @@ void main_prog(void){
 		
 		//now we append the timestamp (server time) per read/write, if option selected
 		if (TIMESTAMP) {
-			//cout << "DEBUG: meter.cpp sending this : " << timeStamp << endl;
 			sprintf(output_buffer,(":t%s\n"),timeStamp.c_str());
 			buf_length=strlen(output_buffer);
 			if (OUTFILE) outfile.write(output_buffer,buf_length);
@@ -410,7 +410,7 @@ void main_prog(void){
     p = &max_latency[4][11];
     if ( t > *p) *p = t;
 
-	//deleting the timeStamps array from the memory
+	//deallocating timeStamps
 	delete [] timeStamps;
   }
 
@@ -1019,8 +1019,10 @@ int Countfiles() {
   return count;
 }
 
+//quick solution
+//TODO: The ntp server adress should come from ctrlApp, not hardcoded
 string getServerAdress() {
-	//return SERVER;
+	//return NTPSERVER;
 	return "192.168.0.201";
 }
 

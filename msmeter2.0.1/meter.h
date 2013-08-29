@@ -8,8 +8,10 @@
 #include <string.h>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include <errno.h>
 #include "stdint.h"
+#include <sstream>
 
 #if defined (METER_OS_WIN32)
   #include "stdafx.h"
@@ -60,9 +62,9 @@ void delay_ms(int ms);
 void startTimer(TimeStore &return_value);
 double stopTimer(TimeStore &start_value);
 //double read(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double read64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random);
+double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps);
 //double write(FileRef &f, ulong addressInfo, ulong no_blocks, ulong block_size, bool random);
-double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random);
+double write64(FileRef &f, uint64_t addressInfo, ulong no_blocks, ulong block_size, bool random, int frameSize, double * timeStamps);
 
 ulong my_rand(ulong limit);
 uint64_t my_rand64(uint64_t limit);
@@ -77,9 +79,17 @@ int stop(void);
 int scan_param(int c, char* v[], int start_index);
 int netSend(const void* lpBuf, int nBufLen);
 
+string getServerAdress(void);
+
 void openFile(FileRef &f, string filename, bool directio);
 void getFileLength64(FileRef &f, uint64_t &length64);
 bool openSocket(string SERVER);
 void closeSocket();
 int getNetworkData(char t[256]);
 int setData(const void* lpBuf, int nBufLen);
+
+void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize);
+void printDoubleArray(double * array, ulong arraySize);
+
+string getTimeStampNTP(void);
+int connectNTPSocket(string serverIP);

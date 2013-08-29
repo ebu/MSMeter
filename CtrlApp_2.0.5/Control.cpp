@@ -83,6 +83,10 @@ void CControl::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_BLOCKSIZE10, m_bBlockSize[10]);
 	DDX_Check(pDX, IDC_BLOCKSIZE11, m_bBlockSize[11]);
 	DDX_Check(pDX, IDC_DIRECTIO, m_bDirectIO);
+	//MS Meter 3 added ntp time stamp and Buffer measurements
+	
+
+
 	//}}AFX_DATA_MAP
 }
 

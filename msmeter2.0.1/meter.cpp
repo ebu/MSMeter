@@ -24,6 +24,13 @@ int    VERBOSE=0;
 ulong  MAX_SIZE=1<<20;		//     1,048,576 (1M), part of block 
 int    NETWORK=0;
 int    FILE_SHARING=0;
+
+//MS Meter 3 addition
+//TODO: initialise these parameters through CtrlApp command
+int PER_BLOCK = 1; //if times for every block are required
+int TIMESTAMP = 1; //if a timestamp is required
+int FRAMESIZEB = 65536;
+
 //DPB
 int   DIRECTIO = 0;
 int	   NUMBER_BLOCKTYPE = 7;
@@ -52,10 +59,12 @@ int started=0;
 
 int main(int argc, char* argv[], char* envp[]) {
   int nRetCode=0;
+
+  //Improve number generation: when 2 instances are run at the same time, the rand value gives the same
   srand((unsigned)time(NULL));    // Randomise random number generator
 
-  switch (initialise(argc, argv)){    // Initialise parameters
-    case 0 : // Error in intialisation
+  switch (initialise(argc, argv)){     //Initialise parameters
+    case 0 : //Error in intialisation
       cout << "Incorrect initialisation\n\n";
       return nRetCode=1;
     case 1 : // Error in parameters
@@ -258,19 +267,42 @@ void main_prog(void){
       stopped = 1;
       continue;
     }
-
+	
+	//declaring the timestamps array, also in the case we're not using it
+	//for the moment, the frame size is static
+	//could be modified to be dynamic
+	if (FRAMESIZEINB < blocksize){
+		FRAMESIZEINB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	}
+	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
+	//frameSizeInKb modulo blocksize should be equal to 0
+	int frameSize = floor(frameSizeInB/blocksize);//it is essentially the blocksPerFrame value
+	int n_frames = floor((double)n_blocks/frameSize);
+	
+	
+	double* timeStamps = new double[n_frames];
+	//initializing all values of timeStamps to zero
+	for (int erz = 0; erz < n_frames; erz++) timeStamps[erz] = 0;
+	
+	//getting the timestamp
+	string timeStamp = "";
+	if (TIMESTAMP) {
+		timeStamp = getTimeStampNTP();
+	}
 
     startTimer(timer);
-    switch (mode) {
-      case seq_read:
-        access_time=read64(f, start_address64, n_blocks, blocksize, false);  break;
-      case seq_write:
-        access_time=write64(f, start_address64, n_blocks, blocksize, false); break;
-      case rand_read:
-        access_time=read64(f, file_length64, n_blocks, blocksize, true);     break;
-      case rand_write:
-        access_time=write64(f, file_length64, n_blocks, blocksize, true);    break;
-    }
+
+	
+	switch (mode) {
+		 case seq_read:
+			access_time=read64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps);  break;
+		  case seq_write:
+			access_time=write64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps); break;
+		  case rand_read:
+			access_time=read64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);     break;
+		  case rand_write:
+			access_time=write64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);    break;
+	}
     t+=stopTimer(timer);
     t-=access_time;
     any_results = 1;
@@ -283,10 +315,56 @@ void main_prog(void){
     cout<<output_buffer;
 	   
     if (VERBOSE){
-      sprintf(output_buffer,("%f,%f\n"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
-      buf_length=strlen(output_buffer);
-      if (OUTFILE) outfile.write(output_buffer,buf_length);
-      if (NETWORK) netSend(output_buffer,buf_length);
+		//printing basic stuff
+		sprintf(output_buffer,("%f,%f"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
+		
+		sprintf(output_buffer,("\n"));
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
+		
+		//now we append the timestamp (server time) per read/write, if option selected
+		if (TIMESTAMP) {
+			sprintf(output_buffer,(":t%s\n"),timeStamp.c_str());
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+		}
+		
+		//now we append the times per frame, if option selected
+		sprintf(output_buffer,(""));
+		if (PER_BLOCK) {
+			//sending the frame size as a line
+			sprintf(output_buffer, (":f%d\n"), frameSize);
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+
+			stringstream ss;
+			int lineCounter = 0;
+			for (int frame = 0; frame < n_frames; frame++) {
+				//concatenate string
+				ss << ":" << timeStamps[frame];
+				
+				if ((lineCounter == 10) || (frame == (n_frames-1))) {
+					lineCounter = 0;
+					ss << "\n";
+					sprintf(output_buffer, ("%s"), ss.str().c_str());
+					buf_length=strlen(output_buffer);
+					if (OUTFILE) outfile.write(output_buffer,buf_length);
+					if (NETWORK) netSend(output_buffer,buf_length);
+					 
+					ss.str("");
+				}
+				lineCounter++;
+			}
+			//emptying the stringstream
+			ss.str("");
+			ss.clear();
+		}
     }
 
     // Accumulate data
@@ -331,8 +409,12 @@ void main_prog(void){
     // Overall
     p = &max_latency[4][11];
     if ( t > *p) *p = t;
+
+	//deallocating timeStamps
+	delete [] timeStamps;
   }
 
+  //end of while loop
 
   if (VERBOSE) {
     if (OUTFILE) outfile.write("\n", 1);
@@ -935,6 +1017,13 @@ int Countfiles() {
   }
 
   return count;
+}
+
+//quick solution
+//TODO: The ntp server adress should come from ctrlApp, not hardcoded
+string getServerAdress() {
+	//return NTPSERVER;
+	return "192.168.0.201";
 }
 
 

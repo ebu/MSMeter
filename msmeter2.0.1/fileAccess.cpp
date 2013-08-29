@@ -115,10 +115,11 @@ extern char * buffer;
       length64= (uint64_t)lseek(f,0,2);
 	}
 
-  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) {
+  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double  sum=0.0;
     cout<<"Unix read\t";
+    
 
     fillBuffer(buffer,blockSize);
 
@@ -127,7 +128,15 @@ extern char * buffer;
         lseek(f,(off64_t)my_rand64(addressInfo-(uint64_t)blockSize),0);
         startTimer(startTime);
         read(f,buffer,blockSize);
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+       
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -135,14 +144,22 @@ extern char * buffer;
       for (int block=0;block<numberBlocks;block++) {
         startTimer(startTime);
         read(f,buffer,blockSize);
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+        
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     close(f);
     return sum;
   }
 
-  double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) {
+  double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double  sum=0.0;
     cout<<"Unix write\t";
@@ -155,7 +172,15 @@ extern char * buffer;
         startTimer(startTime);
         write(f,buffer,blockSize);
         sync();
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -164,7 +189,15 @@ extern char * buffer;
         startTimer(startTime);
         write(f,buffer,blockSize);
         sync();
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     startTimer(startTime);
@@ -273,7 +306,137 @@ extern char * buffer;
 	  //printf("File Length  %llu size = %ld\n", length64, size);
   }
 
-    double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) { 
+  //version with essentially code testing. Takes timestamps by frame or by block, does some basic data crunching
+  //not called, and to be removed
+  double read64_old(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) { 
+    TimeStore startTime;
+    double sum=0.0;
+    cout<<"Win32 read\t";
+
+    fillBuffer(buffer,blockSize);
+
+
+    ulong bytesRead;
+	long addr_low=0;
+	long addr_high=0;
+	uint64_t addr64=0;
+
+	//setting up a temporary value to store highest timer value for each block read
+	//not used yet
+	double highestBlockTime = 0.0;
+	//setting up an array with speeds for every frame (a frame is consisting of 1 or more blocks), to be defined
+	//not used yet
+	int blocksPerFrame = 4;
+	int numberFrames = numberBlocks / blocksPerFrame;//floor, can be zero if too few frames
+	double* timesArray = new double [numberFrames];
+
+	//setting up an array with speeds for every block transmitted
+	double* timeStamps = new double [numberBlocks];
+
+
+	//setting a value for the highest time for every frame read
+	//not used yet
+	double highestFrameTime = 0.0;
+
+
+	int frameCounter = 0;
+	double frameTime = 0.0;
+
+    if (random) {
+      for (ulong block=0;block<numberBlocks;block++) {
+		addr64 = my_rand64(addressInfo-(uint64_t)blockSize);
+		addr_low = (long)addr64;
+		addr_high =(long)(addr64 >> 32); 
+        SetFilePointer(f, addr_low, &addr_high, FILE_BEGIN);
+        startTimer(startTime);
+        if (!ReadFile(f,buffer,blockSize,&bytesRead,NULL)) cout<<GetLastError();
+        FlushFileBuffers(f);
+		double tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+		frameTime+=tempTimerValue;
+		/*
+		if (tempTimerValue > highestBlockTime) {
+			highestBlockTime = tempTimerValue;
+		}
+		
+		//filling array
+		if ((frameCounter < numberFrames) && ((block % blocksPerFrame) == (blocksPerFrame - 1))) {
+			timesArray[frameCounter] = frameTime;
+			if (frameTime > highestFrameTime) {
+				highestFrameTime = frameTime;
+			}
+			frameTime = 0.0;
+			frameCounter++;
+		}
+		*/
+
+		//filling timestamps for every block
+		timeStamps[block] = tempTimerValue;
+      }
+    }
+    else {
+	  addr_low = (long)addressInfo;
+	  addr_high =(long)(addressInfo >> 32); 
+	  SetFilePointer(f, addr_low, &addr_high, FILE_BEGIN);
+      for (ulong block=0;block<numberBlocks;block++) {
+        startTimer(startTime);
+        if (!ReadFile(f,buffer,blockSize,&bytesRead,NULL)) cout<<GetLastError();
+        FlushFileBuffers(f);
+        double tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+		frameTime+=tempTimerValue;
+
+		/*
+		if (tempTimerValue > highestBlockTime) {
+			highestBlockTime = tempTimerValue;
+		}
+		
+		//filling array
+		if ((frameCounter < numberFrames) && ((block % blocksPerFrame) == (blocksPerFrame - 1))) {
+			timesArray[frameCounter] = frameTime;
+			if (frameTime > highestFrameTime) {
+				highestFrameTime = frameTime;
+			}
+			frameTime = 0.0;
+			frameCounter++;
+		}
+		*/
+
+		//filling timestamps for every block
+		timeStamps[block] = tempTimerValue;
+      }
+    }
+    CloseHandle(f);
+
+	//Temporary solution: printing in the clients terminal the lowest block and frame transfer rate
+	//and the average block read time
+	double averageBlockTime = sum / numberBlocks;
+	double averageSpeed = blockSize * numberBlocks * 1000 / (sum * 1048576);
+	double worstSpeedForBlock = blockSize * 1000 / (highestBlockTime * 1048576);
+	cout << endl;
+	cout << "\t Lowest speed for block = " << worstSpeedForBlock << " MB/s with average " << averageSpeed << " MB/s." << endl;
+
+	//printing and checking worst frame transmission
+	double worstSpeedForFrame = (blockSize * blocksPerFrame * 1000) / (highestFrameTime * 1048576);
+	cout << "\t Lowest speed for frame = " << worstSpeedForFrame << " MB/s" << endl;
+	
+	/*
+	//printing array with times for each frame 
+	for (int i=0; i<numberFrames; i++) {
+		cout << timesArray[i] << " ";
+	}
+	cout << endl;
+	*/
+	
+	//printTimeArray(timesArray, numberFrames, blocksPerFrame, blockSize);
+	
+	//deletion of array structure
+	delete [] timesArray;
+
+    return sum;
+  }
+
+  double read64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) { 
     TimeStore startTime;
     double sum=0.0;
     cout<<"Win32 read\t";
@@ -294,7 +457,15 @@ extern char * buffer;
         startTimer(startTime);
         if (!ReadFile(f,buffer,blockSize,&bytesRead,NULL)) cout<<GetLastError();
         FlushFileBuffers(f);
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     else {
@@ -305,15 +476,24 @@ extern char * buffer;
         startTimer(startTime);
         if (!ReadFile(f,buffer,blockSize,&bytesRead,NULL)) cout<<GetLastError();
         FlushFileBuffers(f);
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if ((floor((double)block/frameSize)) < (floor((double)numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     CloseHandle(f);
+
     return sum;
   }
 
 
-	double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random) {
+	double write64(FileRef &f, uint64_t addressInfo, ulong numberBlocks, ulong blockSize, bool random, int frameSize, double * timeStamps) {
     TimeStore startTime;
     double sum=0.0;
     cout<<"Win32 write\t";
@@ -334,7 +514,16 @@ extern char * buffer;
         startTimer(startTime);
         if(!WriteFile(f,buffer,blockSize,&bytesWritten,NULL)) cout<<GetLastError();
         FlushFileBuffers(f);
-        sum+=stopTimer(startTime);
+		double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
+
       }
     }
     else {
@@ -345,12 +534,25 @@ extern char * buffer;
         startTimer(startTime);
         if(!WriteFile(f,buffer,blockSize,&bytesWritten,NULL)) cout<<GetLastError();
         FlushFileBuffers(f);
-        sum+=stopTimer(startTime);
+        double tempTimerValue = 0.0;
+		tempTimerValue = stopTimer(startTime);
+        sum+=tempTimerValue;
+
+		//fills the timeStamps array
+		//last (if incomplete) frame is dropped
+		if (((int)(block/frameSize)) >= ((int)(numberBlocks/frameSize)) ) {
+			timeStamps[block/frameSize] += tempTimerValue;
+		}
       }
     }
     CloseHandle(f);
+
     return sum;
   }
+
+
+
+
 
 #elif defined (METER_FILE_FSTREAM)
 // ** C++ fstream ** //
@@ -432,5 +634,59 @@ extern char * buffer;
 // Fill buffer
 void fillBuffer(char * buffer, ulong bufferSize) {
   for (ulong l=0;l<bufferSize;l++) buffer[l] = my_rand(0xff);
+}
+
+//uses an array of times to calculate some basic stats and prints them on screen
+//function used for testing and debugging purposes only
+void printTimeArray(double * times, ulong timesSize, int blocksInFrame, int blockSize) {
+	//printing the array
+	cout << "***Time per frame in ms***" << endl;
+	for (ulong i=0; i < timesSize; i++) {
+		cout << times[i] << " ";
+	}
+	cout << endl;
+
+
+	//printing the speeds of every frame in MB/s
+	cout << "***Speed per frame in MB/s***" << endl;
+	for (ulong i=0; i < timesSize; i++) {
+		cout << (blocksInFrame*blockSize*1000)/(times[i]*1048576) << " ";//weird data, check
+	}
+	cout << endl;
+
+	//computing total time
+	double totalTime = 0.0;
+	for (ulong i=0; i < timesSize; i++) {
+		totalTime += times[i];
+	}
+	//and average speed
+	cout << "average speed computed with frames : " << (blocksInFrame*blockSize*timesSize*1000)/(totalTime*1048576) << endl;//correct
+
+	//calculating the average value of the speed
+	double sum = 0.0;
+	double average = 0.0;
+	for (ulong i=0; i < timesSize; i++) {
+		sum += (blocksInFrame*blockSize*1000)/(times[i]*1048576);
+	}
+	average = sum/timesSize;
+
+	//calculating standart deviation
+	double devSum;
+	for (ulong i=0; i < timesSize; i++) {
+		double diff = abs(((blocksInFrame*blockSize*1000)/(times[i]*1048576)) - average);
+		devSum += (diff*diff);
+	}
+	
+	cout << "Average frame t. : " << average << " MB/s, standart deviation : " << sqrt(devSum/timesSize)  << endl;
+
+
+	cout << "--------------------------" << endl;
+}
+
+
+//Function for testing and debugging only
+void printDoubleArray(double * array, ulong arraySize) {
+	for (int i=0; i < arraySize; i++) cout<<array[i]<<" ";
+	cout << endl;
 }
 

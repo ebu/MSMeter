@@ -61,8 +61,16 @@ int started=0;
 int main(int argc, char* argv[], char* envp[]) {
   int nRetCode=0;
 
-  //Improve number generation: when 2 instances are run at the same time, the rand value gives the same
-  srand((unsigned)time(NULL));    // Randomise random number generator
+  //Improved number generation: when 2 instances are run at the same time, the rand value gives the same
+  //using process id to get better seed
+  GetCurrentProcessId()
+#if defined (METER_OS_LINUX)
+	  int pid = getpid();
+#elif defined (METER_OS_WIN32)
+	  int pid = GetCurrentProcessId();
+#endif
+
+  srand((unsigned)time(NULL) + pid);    // Randomise random number generator
 
   switch (initialise(argc, argv)){     //Initialise parameters
     case 0 : //Error in intialisation
@@ -313,6 +321,7 @@ void main_prog(void){
 
 	//DEBUG, TO REMOVE
 	//cout << "NTP server : " << NTPSERVER << ", status : " << TIMESTAMP << " , perblock " << PER_BLOCK << " , blocksize : " << FRAMESIZEB << endl;
+	
 
     // write read times and rates
 	sprintf(output_buffer,("%6.2f MB/s, Latency %5.2f ms  fref=%2d FS=%11llu  TL=%8llu  SA=%11llu\n"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t, f, file_length64, total_length64, start_address64);

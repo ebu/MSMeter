@@ -97,12 +97,13 @@ BOOL CTestClient::GetName()
 BOOL CTestClient::SendHeader(BOOL flag, DWORD size)
 {
 	if (m_header.changed){
-		CString str, str2, str3, str4;
+		CString str, str2, str3, str4, str5, str6;
 
 		if(flag) {
 			//AfxMessageBox("Create flag set");
 			if (m_header.testfilepath.GetLength() > 0) {
 			str = "-p ";
+
 			str += m_header.testfilepath;
 			}
 
@@ -169,6 +170,21 @@ BOOL CTestClient::SendHeader(BOOL flag, DWORD size)
 		
 			str2.Format(" -bn %d %s", typecount, str3);
 			str += str2;
+
+
+			//MSMeter 3 additions
+
+			// set ntp flag if needed
+			if (m_header.ntp_stamps){
+				str5.Format(" -ntp %s", m_header.ntp_address);
+				str += str5;
+			}
+
+			//set per frame flags if needed
+			if (m_header.per_frame){
+				str6.Format(" -pf %d", m_header.frame_size);
+				str += str6;
+			}
 		}
 
 		//AfxMessageBox((LPCTSTR)str);
@@ -183,7 +199,7 @@ BOOL CTestClient::SendHeader(BOOL flag, DWORD size)
 // Create version of header to be output to CEdit window
 CString CTestClient::CreateHeaderStr(BOOL flag, DWORD size)
 {
-	CString str, str2, str3, str4;
+	CString str, str2, str3, str4, str5, str6;
 
 	if(flag) {
 		//AfxMessageBox("Create flag set");
@@ -255,6 +271,21 @@ CString CTestClient::CreateHeaderStr(BOOL flag, DWORD size)
 		
 		str2.Format(" -bn %d %s", typecount, str3);
 		str += str2;
+
+		//MSMeter 3 additions
+
+		// set ntp flag if needed
+		if (m_header.ntp_stamps){
+			str5.Format(" -ntp %s", m_header.ntp_address);
+			str += str5;
+		}
+
+		//set per frame flags if needed
+		if (m_header.per_frame){
+			str6.Format(" -pf %d", m_header.frame_size);
+			str += str6;
+		}
+
 	}
 	return str;
 }

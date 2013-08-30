@@ -27,9 +27,10 @@ int    FILE_SHARING=0;
 
 //MS Meter 3 addition
 //TODO: initialise these parameters through CtrlApp command
-int PER_BLOCK = 1; //if times for every block are required
-int TIMESTAMP = 1; //if a timestamp is required
+int PER_BLOCK = 0; //if times for every block are required
+int TIMESTAMP = 0; //if a timestamp is required
 int FRAMESIZEB = 65536;
+CString NTPSERVER = "localhost";
 
 //DPB
 int   DIRECTIO = 0;
@@ -271,12 +272,12 @@ void main_prog(void){
 	//declaring the timestamps array, also in the case we're not using it
 	//for the moment, the frame size is static
 	//could be modified to be dynamic
-	if (FRAMESIZEINB < blocksize){
-		FRAMESIZEINB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	if (FRAMESIZEB < blocksize){
+		FRAMESIZEB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
 	}
 	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
 	//frameSizeInKb modulo blocksize should be equal to 0
-	int frameSize = floor(frameSizeInB/blocksize);//it is essentially the blocksPerFrame value
+	int frameSize = floor(FRAMESIZEB/blocksize);//it is essentially the blocksPerFrame value
 	int n_frames = floor((double)n_blocks/frameSize);
 	
 	
@@ -309,6 +310,9 @@ void main_prog(void){
 
   	// De-allocate buffer memory
     if (buffer) delete [] buffer;
+
+	//DEBUG, TO REMOVE
+	//cout << "NTP server : " << NTPSERVER << ", status : " << TIMESTAMP << " , perblock " << PER_BLOCK << " , blocksize : " << FRAMESIZEB << endl;
 
     // write read times and rates
 	sprintf(output_buffer,("%6.2f MB/s, Latency %5.2f ms  fref=%2d FS=%11llu  TL=%8llu  SA=%11llu\n"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t, f, file_length64, total_length64, start_address64);
@@ -561,7 +565,7 @@ int stop() {
   static int first_time = 1;
   string str;
   char t[256];
-  char * ta[35]; //Meter 2, changed from 20 to 35 for extra control parameters
+  char * ta[45]; //Meter 2, changed from 20 to 35 for extra control parameters
   int c, rv, loop_flag = 1, l;
   char * p;
 
@@ -611,7 +615,8 @@ int stop() {
         
 		// The max value of c determines the number of tokens that can be used
 		// This was increased from 20 to 35, when new parameters were added
-		while ((ta[c] = strtok(((c == 0)?(p):(NULL))," ")) && c < 35) {
+		// and re-increased for MSMeter 3
+		while ((ta[c] = strtok(((c == 0)?(p):(NULL))," ")) && c < 45) {
           //cout << ta[c] << endl;
           c++;
         }
@@ -695,6 +700,23 @@ int scan_param(int c, char* v[], int start_index) {
 	cmax=c;   // cmax = highest valid index
 
 	while (c>=start_index) {
+
+		// Meter 3, get per frame measurements
+		if (!strcmp(v[c],"-pf")) {
+			t = atoi(v[c + 1]);
+			PER_BLOCK = 1;
+			FRAMESIZEB = t;
+
+			//DEBUG:
+			cout << "Got perblock command with framesize : " << FRAMESIZEB << endl;
+		}
+
+		// Meter 3, get NTP argument
+		if (!strcmp(v[c],"-ntp")) {
+			TIMESTAMP = 1;
+			NTPSERVER = v[c+1];
+		}
+
 
 		// Meter 2, get list of block sizes
 		if (!strcmp(v[c],"-bs")) {
@@ -1022,8 +1044,8 @@ int Countfiles() {
 //quick solution
 //TODO: The ntp server adress should come from ctrlApp, not hardcoded
 string getServerAdress() {
-	//return NTPSERVER;
-	return "192.168.0.201";
+	return NTPSERVER;
+	//return "192.168.0.201";
 }
 
 

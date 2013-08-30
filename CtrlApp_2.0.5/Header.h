@@ -27,6 +27,12 @@ public:
 	BOOL lstblocksize[MAXBLOCKTYPE];
 	BOOL directio;
 
+	//Meter 3 additions
+	BOOL per_frame;
+	int frame_size;
+	BOOL ntp_stamps;
+	CString ntp_address;
+
 };
 
 #endif // !defined(AFX_HEADER_H__A571865D_A1A1_4402_8462_59FE8B160A8F__INCLUDED_)

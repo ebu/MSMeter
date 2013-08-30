@@ -194,6 +194,12 @@ BOOL CControlDlg::OnInitDialog()
 	for(int i = 1 ; i < MAXBLOCKTYPE ; i++) {
 		m_bBlockSize[i] = FALSE;
 	}
+	//MS Meter 3 added
+	m_bPerFrame = FALSE;
+	m_bNTP = FALSE;
+	m_dFrameSizeB = 65536;
+	m_sNTPAddress = "";
+
 
 
 	CString str;
@@ -342,6 +348,12 @@ void CControlDlg::OnControlpanel()
 	ps.m_controlpage.m_bBlockSize[10] = m_pTestClient[t]->m_header.lstblocksize[10];
 	ps.m_controlpage.m_bBlockSize[11] = m_pTestClient[t]->m_header.lstblocksize[11];
 	ps.m_controlpage.m_bDirectIO = m_pTestClient[t]->m_header.directio;
+	// Added for MS Meter 3
+	ps.m_controlpage.m_bPerFrame = m_pTestClient[t]->m_header.per_frame;
+	ps.m_controlpage.m_dFrameSize = m_pTestClient[t]->m_header.frame_size;
+	ps.m_controlpage.m_bNTP = m_pTestClient[t]->m_header.ntp_stamps;
+	ps.m_controlpage.m_sNTPAddress = m_pTestClient[t]->m_header.ntp_address;
+
 	//
 	ps.m_filespage.m_OutputFileName = m_sOutFileName;
 	ps.m_filespage.m_OutputFilePath = m_OutFilePath;
@@ -423,6 +435,11 @@ void CControlDlg::OnControlpanel()
 			m_pTestClient[t]->m_header.lstblocksize[10] = ps.m_controlpage.m_bBlockSize[10];
 			m_pTestClient[t]->m_header.lstblocksize[11] = ps.m_controlpage.m_bBlockSize[11];
 			m_pTestClient[t]->m_header.directio = ps.m_controlpage.m_bDirectIO;
+			//Added for MS Meter 3
+			m_pTestClient[t]->m_header.per_frame = ps.m_controlpage.m_bPerFrame;
+			m_pTestClient[t]->m_header.frame_size = ps.m_controlpage.m_dFrameSize;
+			m_pTestClient[t]->m_header.ntp_stamps = ps.m_controlpage.m_bNTP;
+			m_pTestClient[t]->m_header.ntp_address = ps.m_controlpage.m_sNTPAddress;
 		}
 
 		m_SaveResults = ps.m_filespage.m_save;
@@ -911,6 +928,11 @@ LRESULT CControlDlg::OnApply (WPARAM wParam, LPARAM lParam) {
 		for (int i = 1 ; i < MAXBLOCKTYPE ; i++) {
 			m_pTestClient[t]->m_header.lstblocksize[i] = h->lstblocksize[i];
 		}
+		//Meter 3 NTP + Per Frame measurements
+		m_pTestClient[t]->m_header.ntp_address = h->ntp_address;
+		m_pTestClient[t]->m_header.ntp_stamps = h->ntp_stamps;
+		m_pTestClient[t]->m_header.per_frame = h->per_frame;
+		m_pTestClient[t]->m_header.frame_size = h->frame_size;
 	}
 	return 0;
 }
@@ -918,11 +940,10 @@ LRESULT CControlDlg::OnApply (WPARAM wParam, LPARAM lParam) {
 
 void CControlDlg::ProcessData(CString s, int i)
 {
-	//TODO: modify function so that behaves as normal when msmeters send "reports" like before, or while it's the first report.
+		if (s.GetLength() == 0) return;
 
-	if (s.GetLength() == 0) return;
-
-	//executed if its only the "classic" way of updating or 1st line
+	//executed if message sent from the client is the basic variety:
+	//compatible with older versions
 	if (s.GetAt(0) != ':') {
 
 		CString str;
@@ -987,7 +1008,7 @@ void CControlDlg::ProcessData(CString s, int i)
 	} else {
 		//here we have received a string starting with ':', means we'll just write it in the csv file, without
 		//updating any values on the CtrlApp screen
-		//executed when receiving the timestamp or the delta times 
+		//a string starting with ':' is a timestamp, the frame size or the delta times
 		CString str;
 		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
 			str.Format("%3d,%s\n", i, (LPCTSTR)s);
@@ -996,8 +1017,8 @@ void CControlDlg::ProcessData(CString s, int i)
 			}
 		}
 	}
-	//do we need to left this code to be executed even when only transferring timestamps?
-	//1st check, leave it as it is
+	
+
 	m_pTestClient[i]->m_bResponding = TRUE;
 	if((m_nStartAveraging % (m_nSelClients * 10)) == 0) {
 		CheckForResponse();

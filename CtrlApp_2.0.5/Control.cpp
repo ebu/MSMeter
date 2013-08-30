@@ -43,6 +43,12 @@ CControl::CControl() : CPropertyPage(CControl::IDD)
 	m_bBlockSize[11] = FALSE;
 	m_bDirectIO = TRUE;
 	//}}AFX_DATA_INIT
+
+	//Additions of MSMeter 3
+	m_bPerFrame = FALSE;
+	m_dFrameSize = 65536;
+	m_bNTP = FALSE;
+	m_sNTPAddress = "";
 }
 
 CControl::~CControl()
@@ -84,8 +90,10 @@ void CControl::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_BLOCKSIZE11, m_bBlockSize[11]);
 	DDX_Check(pDX, IDC_DIRECTIO, m_bDirectIO);
 	//MS Meter 3 added ntp time stamp and Buffer measurements
-	
-
+	DDX_Check(pDX, IDC_PERFRAMELA, m_bPerFrame);
+	DDX_Text(pDX, IDC_FRAMESIZEB, m_dFrameSize);
+	DDX_Text(pDX, IDC_NTPADDRESS, m_sNTPAddress);
+	DDX_Check(pDX, IDC_NTP, m_bNTP);
 
 	//}}AFX_DATA_MAP
 }

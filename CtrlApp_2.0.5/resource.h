@@ -34,6 +34,8 @@
 #define IDC_NCREATE                     1014
 #define IDC_VERBOSE                     1015
 #define IDC_CREATEFILES                 1016
+#define IDC_FRAMESIZEB                  1017
+#define IDC_NTPADDRESS                  1018
 #define IDC_SHARING                     1019
 #define IDC_FILESELECT                  1024
 #define IDC_SAVE                        1025
@@ -74,6 +76,10 @@
 #define IDC_BLOCKSIZE10                 1059
 #define IDC_BLOCKSIZE11                 1060
 #define IDC_DIRECTIO                    1061
+#define IDC_PERFRAMELA                  1062
+#define IDC_NTP                         1063
+#define IDC_NTP2                        1064
+#define IDC_USELESS                     1064
 
 // Next default values for new objects
 // 

@@ -50,6 +50,12 @@ Header::Header()
 	lstblocksize[11] = FALSE;
 	directio = FALSE;
 
+	//MS Meter 3 default values
+	per_frame = FALSE;
+	frame_size = 65536;
+	ntp_stamps = FALSE;
+	ntp_address = "";
+
 }
 
 Header::~Header()

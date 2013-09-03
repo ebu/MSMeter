@@ -940,7 +940,7 @@ LRESULT CControlDlg::OnApply (WPARAM wParam, LPARAM lParam) {
 
 void CControlDlg::ProcessData(CString s, int i)
 {
-		if (s.GetLength() == 0) return;
+	if (s.GetLength() == 0) return;
 
 	//executed if message sent from the client is the basic variety:
 	//compatible with older versions
@@ -983,28 +983,14 @@ void CControlDlg::ProcessData(CString s, int i)
 
 		latency = atof((LPCTSTR)s.Mid(t2 + 1));
 
-		/*
-		t1 = t2;
-		t2 = s.Find(',', t1 + 1);							//This should be the last ',' new comment: not anymore
-		rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+		
 
-		t1 = t2;											//new comment: this should be the last ','
-		t2 = s.Find(',', t1 + 1);
-
-		latency = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-		*/
-
-		//there still is data after that, in the form of ",timestamp:timestamp:timestamp"
-
-		//str.Format("%s, %d, %ld, %d, %f, %f",(LPCTSTR)s, mode, length, blocksize, rate, latency);
-		//AfxMessageBox(str);
 		UpdateDisplay(rate, latency, blocksize, length);
 	
 		if(m_fProcessData) {		//Test Flag to start and stop processing 
 			m_Data.AddResult(mode, length, blocksize, rate, latency);
 		}
 
-		
 	} else {
 		//here we have received a string starting with ':', means we'll just write it in the csv file, without
 		//updating any values on the CtrlApp screen
@@ -1018,13 +1004,10 @@ void CControlDlg::ProcessData(CString s, int i)
 		}
 	}
 	
-
 	m_pTestClient[i]->m_bResponding = TRUE;
 	if((m_nStartAveraging % (m_nSelClients * 10)) == 0) {
 		CheckForResponse();
 	}
-
-	
 }
 
 void CControlDlg::UpdateDisplay(double rate, double latency, int blocksize, DWORD length )

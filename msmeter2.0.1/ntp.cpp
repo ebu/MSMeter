@@ -1,13 +1,6 @@
-
-
 #include "meter.h"
 
-//#define SERVERIP "ch.pool.ntp.org"
-#define PORTNUMBER 123
-
 using namespace std;
-
-
 
 #if defined (METER_OS_WIN32)
 
@@ -41,9 +34,7 @@ string getTimeStampNTP(void) {
 	int receivedBytesNTP;
 	char incomingDataBufferNTP[60];
 	receivedBytesNTP = CsockNTP.Receive(incomingDataBufferNTP, 61);
-
-	//cout << "nb of received bytes from NTP : " << receivedBytesNTP << endl;
-
+	
 	if (receivedBytesNTP == 0) return failed;	//host shut down
 	if (receivedBytesNTP ==-1) return failed;	//error
 
@@ -64,8 +55,6 @@ string getTimeStampNTP(void) {
 			second_fraction = (second_fraction << 8) + incomingDataBufferNTP[ n + 44 ];
 		}
 		int microseconds = (long long) second_fraction * 1000000 / 4294967296;
-		
-		//cout << "DEBUG: NTP.cpp time : " << seconds << endl;
 		
 		stringstream ssNTP;
 		ssNTP << seconds;
@@ -128,18 +117,12 @@ string getTimeStampNTP(void) {
 		msgNTP[0] = 0x23;
 		int lenNTP = 48;
 		
-		//cout << "DEBUG: ntp.cpp before sending" << endl;
-		
 		send(socketfd, msgNTP, lenNTP, 0);
 		
 		ssize_t receivedBytesNTP;
 		char incomingDataBufferNTP[60];
 		
-		//cout << "DEBUG: ntp.cpp before receiving" << endl;
-		
 		receivedBytesNTP = recv(socketfd, incomingDataBufferNTP, 60, 0);
-		
-		//cout << "DEBUG: ntp.cpp received in bytes: " << receivedBytesNTP << endl;
 		
 		if (receivedBytesNTP == 0) return failed;	//host shut down
 		if (receivedBytesNTP ==-1) return failed;	//error

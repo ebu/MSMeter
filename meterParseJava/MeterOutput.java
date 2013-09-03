@@ -17,7 +17,6 @@ public class MeterOutput {
 	public void write(String line) throws IOException{
 		bw.write(line);
 		bw.newLine();
-		
 	}
 	
 	public void close(){

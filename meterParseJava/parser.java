@@ -5,11 +5,10 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 
 
-public class parser {
+public class Parser {
 	
 	static MeterOutput output;
 	static BigInteger zeroTime;	//Ntp time at the beginning of each "session"
-								//is used to substract from all subsequent NTP's
 	static boolean zeroTimeInit = false; //zeroTime has to be initialised only once
 
 	public static void main(String[] args) {		
@@ -23,35 +22,39 @@ public class parser {
 				readAndParse(csvfileName);
 				output.close();
 				System.out.println("done.");
-			} catch (IOException e) {
-				System.out.println("IO Error: Parser will end");
+			} catch (Exception e) {
+				System.err.println("IO Error: Parser will end");
 				e.printStackTrace();
 			}
-			
 		} else {
-			System.out.println("Error: needs 2 arguments - inputfile outputfile");
+			System.err.println("Error: needs 2 arguments - inputfile outputfile");
 		}
 		
 	}
 	
 	
-	public static void readAndParse(String filename) throws IOException{
+	//reads a line, decides if useful or not, parses the ID, and "gives" it to the targeted instance
+	public static void readAndParse(String filename) throws Exception{
 		
+		//TODO: replace by HashMap
 		LinkedList<ReadWrite> rwList = new LinkedList<ReadWrite>();
 		
 		
 		BufferedReader br = new BufferedReader(new FileReader(filename));
 		String line;
+		
+		//a line in the file looks like this:
+		//'  (id)(separator)(data............)'
+		//if a line starts by R, we do not process it
 		while ((line = br.readLine()) != null) {
 			
 			if (line.charAt(0) == 'R'){
-				break;	//this is to stop reading the file for the Results Summary
-						//we do not need them
+				break;
 			}
 			
 			int clientId = Integer.parseInt((line.substring(0, 3)).trim());
 			
-			//if a "stack"- instance exists, we add the line to it
+			//if a "stack"- instance of a certain client ID exists, we add the line to it
 			boolean found = false;
 			int rwListId = -1;
 			for (int i = 0; i < rwList.size(); i++){
@@ -67,9 +70,10 @@ public class parser {
 				rwList.add(rwListId, temp);
 			}
 			//we finally "give" the line to the correct instance
+			//the clients instance will process the line to extract info
 			rwList.get(rwListId).receiveLine(line);
 		}
-		br.close();
+		br.close();//closing the wrapper closes the underlying FileReader
 		
 	}
 	

@@ -42,6 +42,13 @@ public:
 	BOOL m_fGetNextScriptCommand;					//Flag to show running state of script 
 	double m_RunningCommandTime;					// value used to set RunCommand bar
 	BOOL m_fProcessData;							// Flag to start and stop prcoessing of data
+
+	//Added for MS Meter 3
+	BOOL m_bPerFrame;
+	BOOL m_bNTP;
+	int m_dFrameSizeB;
+	CString m_sNTPAddress;
+
 	//
 	int m_nUpdateTime;
 	UINT m_nStartAveraging;						//Values used for measurement bars on main window

@@ -37,6 +37,12 @@ public:
 	BOOL	m_bDirectIO;
 	//}}AFX_DATA
 
+	//Additions of MSMeter 3
+	BOOL	m_bPerFrame;
+	int		m_dFrameSize;
+	BOOL	m_bNTP;
+	CString	m_sNTPAddress;
+
 
 // Overrides
 	// ClassWizard generate virtual function overrides

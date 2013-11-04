@@ -24,6 +24,14 @@ int    VERBOSE=0;
 ulong  MAX_SIZE=1<<20;		//     1,048,576 (1M), part of block 
 int    NETWORK=0;
 int    FILE_SHARING=0;
+
+//MS Meter 3 addition
+//TODO: initialise these parameters through CtrlApp command
+int PER_BLOCK = 0; //if times for every block are required
+int TIMESTAMP = 0; //if a timestamp is required
+int FRAMESIZEB = 65536;
+CString NTPSERVER = "localhost";
+
 //DPB
 int   DIRECTIO = 0;
 int	   NUMBER_BLOCKTYPE = 7;
@@ -52,10 +60,19 @@ int started=0;
 
 int main(int argc, char* argv[], char* envp[]) {
   int nRetCode=0;
-  srand((unsigned)time(NULL));    // Randomise random number generator
 
-  switch (initialise(argc, argv)){    // Initialise parameters
-    case 0 : // Error in intialisation
+  //Improved number generation: when 2 instances are run at the same time, the rand value gives the same
+  //using process id to get better seed
+#if defined (METER_OS_LINUX)
+	  int pid = getpid();
+#elif defined (METER_OS_WIN32)
+	  int pid = GetCurrentProcessId();
+#endif
+
+  srand((unsigned)time(NULL) + pid);    // Randomise random number generator
+
+  switch (initialise(argc, argv)){     //Initialise parameters
+    case 0 : //Error in intialisation
       cout << "Incorrect initialisation\n\n";
       return nRetCode=1;
     case 1 : // Error in parameters
@@ -125,7 +142,7 @@ void main_prog(void){
   }
 
   // Display helpful information to the user
-  cout<<"\nMedia storage meter 2.0.1 BBC R&D 6/6/2011 DPB\n";
+  cout<<"\nMedia storage meter 3.0.1 BBC R&D 6/6/2011 DPB\n";
   cout<<"----------------------------------------------------\n";
   cout<<"- METER_FILE_UNIX and METER_WIN32 64 bit file access\n";
   cout<<"- Block size and Direct IO selectable from Ctrl App\n";
@@ -258,19 +275,46 @@ void main_prog(void){
       stopped = 1;
       continue;
     }
-
+	
+	//declaring the timestamps array, also in the case we're not using it
+	//for the moment, the frame size is static
+	//could be modified to be dynamic
+	if (FRAMESIZEB < blocksize){
+		FRAMESIZEB = blocksize;//if the frame size asked is smaller than the block, we cannot measure it anyways
+	}
+	//trying to find the quantity of blocks per frame, this may change the frame size in KB, because
+	//frameSizeInKb modulo blocksize should be equal to 0
+	int frameSize = floor(FRAMESIZEB/blocksize);//it is essentially the blocksPerFrame value
+	int n_frames = floor((double)n_blocks/frameSize);
+	
+	
+	double* timeStamps = new double[n_frames];
+	//initializing all values of timeStamps to zero
+	for (int j = 0; j < n_frames; j++) timeStamps[j] = 0;
+	
+	//getting the timestamp
+	string timeStamp = "";
+	if (TIMESTAMP) {
+		timeStamp = getTimeStampNTP();
+	}
 
     startTimer(timer);
-    switch (mode) {
-      case seq_read:
-        access_time=read64(f, start_address64, n_blocks, blocksize, false);  break;
-      case seq_write:
-        access_time=write64(f, start_address64, n_blocks, blocksize, false); break;
-      case rand_read:
-        access_time=read64(f, file_length64, n_blocks, blocksize, true);     break;
-      case rand_write:
-        access_time=write64(f, file_length64, n_blocks, blocksize, true);    break;
-    }
+
+	
+	switch (mode) {
+		 case seq_read:
+			access_time=read64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps);
+			break;
+		  case seq_write:
+			access_time=write64(f, start_address64, n_blocks, blocksize, false, frameSize, timeStamps);
+			break;
+		  case rand_read:
+			access_time=read64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);
+			break;
+		  case rand_write:
+			access_time=write64(f, file_length64, n_blocks, blocksize, true, frameSize, timeStamps);
+			break;
+	}
     t+=stopTimer(timer);
     t-=access_time;
     any_results = 1;
@@ -283,10 +327,54 @@ void main_prog(void){
     cout<<output_buffer;
 	   
     if (VERBOSE){
-      sprintf(output_buffer,("%f,%f\n"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
-      buf_length=strlen(output_buffer);
-      if (OUTFILE) outfile.write(output_buffer,buf_length);
-      if (NETWORK) netSend(output_buffer,buf_length);
+		//printing basic stuff
+		sprintf(output_buffer,("%f,%f"),(n_blocks*blocksize/1048576.0)/(access_time/1000.0),t);
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
+		
+		sprintf(output_buffer,("\n"));
+		buf_length=strlen(output_buffer);
+		if (OUTFILE) outfile.write(output_buffer,buf_length);
+		if (NETWORK) netSend(output_buffer,buf_length);
+		
+		//now we append the timestamp (server time) per read/write, if option selected
+		if (TIMESTAMP) {
+			sprintf(output_buffer,(":t%s\n"),timeStamp.c_str());
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+		}
+		
+		//now we append the times per frame, if option selected
+		sprintf(output_buffer,(""));
+		if (PER_BLOCK) {
+			//sending the frame size as a line
+			sprintf(output_buffer, (":f%d\n"), frameSize);
+			buf_length=strlen(output_buffer);
+			if (OUTFILE) outfile.write(output_buffer,buf_length);
+			if (NETWORK) netSend(output_buffer,buf_length);
+
+			stringstream ss;
+			int lineCounter = 0;
+			for (int frame = 0; frame < n_frames; frame++) {
+				//concatenate string
+				ss << ":" << timeStamps[frame];
+				
+				if ((lineCounter == 10) || (frame == (n_frames-1))) {
+					lineCounter = 0;
+					ss << "\n";
+					sprintf(output_buffer, ("%s"), ss.str().c_str());
+					buf_length=strlen(output_buffer);
+					if (OUTFILE) outfile.write(output_buffer,buf_length);
+					if (NETWORK) netSend(output_buffer,buf_length);
+					 
+					ss.str("");
+				}
+				lineCounter++;
+			}
+			ss.clear();
+		}
     }
 
     // Accumulate data
@@ -331,8 +419,12 @@ void main_prog(void){
     // Overall
     p = &max_latency[4][11];
     if ( t > *p) *p = t;
+
+	//deallocating timeStamps
+	delete [] timeStamps;
   }
 
+  //end of while loop
 
   if (VERBOSE) {
     if (OUTFILE) outfile.write("\n", 1);
@@ -479,7 +571,7 @@ int stop() {
   static int first_time = 1;
   string str;
   char t[256];
-  char * ta[35]; //Meter 2, changed from 20 to 35 for extra control parameters
+  char * ta[45]; //Meter 2.2, changed from 35 to 45 for extra control parameters
   int c, rv, loop_flag = 1, l;
   char * p;
 
@@ -529,7 +621,8 @@ int stop() {
         
 		// The max value of c determines the number of tokens that can be used
 		// This was increased from 20 to 35, when new parameters were added
-		while ((ta[c] = strtok(((c == 0)?(p):(NULL))," ")) && c < 35) {
+		// and re-increased for MSMeter 2.2 to 45
+		while ((ta[c] = strtok(((c == 0)?(p):(NULL))," ")) && c < 45) {
           //cout << ta[c] << endl;
           c++;
         }
@@ -613,6 +706,20 @@ int scan_param(int c, char* v[], int start_index) {
 	cmax=c;   // cmax = highest valid index
 
 	while (c>=start_index) {
+
+		// Meter 2.2, get per frame measurements
+		if (!strcmp(v[c],"-pf")) {
+			t = atoi(v[c + 1]);
+			PER_BLOCK = 1;
+			FRAMESIZEB = t;
+		}
+
+		// Meter 2.2, get NTP argument
+		if (!strcmp(v[c],"-ntp")) {
+			TIMESTAMP = 1;
+			NTPSERVER = v[c+1];
+		}
+
 
 		// Meter 2, get list of block sizes
 		if (!strcmp(v[c],"-bs")) {
@@ -938,9 +1045,14 @@ int Countfiles() {
 }
 
 
+string getServerAdress() {
+	return NTPSERVER;
+}
+
+
 void ArgHelp(void) {
   puts("usage -\tmeter [help] | [[-p <root>] [-n N] [-w W] [-r R] ...");
-  puts("\t\t [-l L] [-c S] [-d D] [-o <outfile>] [-v | -v-] [-rm SRV]]\n");
+  puts("\t\t [-l L] [-c S] [-d D] [-o <outfile>] [-v | -v-] [-rm SRV] [-ntp SRV]]\n");
   puts("\t\t [-dio D] [-bn N] [-bs B1 B2 B3B4 B5 B6 B7 B8 B9 B10 B11]\n");
   puts("File server test programme. Accesses a set of test files, reading"); 
   puts("or writing in sequential or random blocks. The filenames, total data");
@@ -962,6 +1074,7 @@ void ArgHelp(void) {
   puts("-bn\tNumber of block sizes to use. N = 1 to 11. Default 7");
   puts("-bs\tBlock sizes to use. Bx = 1 to 11. Default 1 2 3 4 5 6 7 0 0 0 0");
   puts("-rm\tEnable remote control. SRV = server name (IP address or machine name).\n");
+  puts("-ntp\tEnable ntp timestamps. SRV = server name (IP address or machine name).\n");
   puts("All parameters may occur in any order, except 'help', though the modifiers");
   puts("<root>, N, W, R, L, S, D, <outfile> and SRV must immediately follow their");
   puts("flags, -p, -n, -w, -c, -r, -l, -d, -dio, -bn, -bs, -o or -rm.");

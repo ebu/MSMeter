@@ -194,6 +194,12 @@ BOOL CControlDlg::OnInitDialog()
 	for(int i = 1 ; i < MAXBLOCKTYPE ; i++) {
 		m_bBlockSize[i] = FALSE;
 	}
+	//MS Meter 3 added
+	m_bPerFrame = FALSE;
+	m_bNTP = FALSE;
+	m_dFrameSizeB = 65536;
+	m_sNTPAddress = "";
+
 
 
 	CString str;
@@ -342,6 +348,12 @@ void CControlDlg::OnControlpanel()
 	ps.m_controlpage.m_bBlockSize[10] = m_pTestClient[t]->m_header.lstblocksize[10];
 	ps.m_controlpage.m_bBlockSize[11] = m_pTestClient[t]->m_header.lstblocksize[11];
 	ps.m_controlpage.m_bDirectIO = m_pTestClient[t]->m_header.directio;
+	// Added for MS Meter 3
+	ps.m_controlpage.m_bPerFrame = m_pTestClient[t]->m_header.per_frame;
+	ps.m_controlpage.m_dFrameSize = m_pTestClient[t]->m_header.frame_size;
+	ps.m_controlpage.m_bNTP = m_pTestClient[t]->m_header.ntp_stamps;
+	ps.m_controlpage.m_sNTPAddress = m_pTestClient[t]->m_header.ntp_address;
+
 	//
 	ps.m_filespage.m_OutputFileName = m_sOutFileName;
 	ps.m_filespage.m_OutputFilePath = m_OutFilePath;
@@ -423,6 +435,11 @@ void CControlDlg::OnControlpanel()
 			m_pTestClient[t]->m_header.lstblocksize[10] = ps.m_controlpage.m_bBlockSize[10];
 			m_pTestClient[t]->m_header.lstblocksize[11] = ps.m_controlpage.m_bBlockSize[11];
 			m_pTestClient[t]->m_header.directio = ps.m_controlpage.m_bDirectIO;
+			//Added for MS Meter 3
+			m_pTestClient[t]->m_header.per_frame = ps.m_controlpage.m_bPerFrame;
+			m_pTestClient[t]->m_header.frame_size = ps.m_controlpage.m_dFrameSize;
+			m_pTestClient[t]->m_header.ntp_stamps = ps.m_controlpage.m_bNTP;
+			m_pTestClient[t]->m_header.ntp_address = ps.m_controlpage.m_sNTPAddress;
 		}
 
 		m_SaveResults = ps.m_filespage.m_save;
@@ -911,6 +928,11 @@ LRESULT CControlDlg::OnApply (WPARAM wParam, LPARAM lParam) {
 		for (int i = 1 ; i < MAXBLOCKTYPE ; i++) {
 			m_pTestClient[t]->m_header.lstblocksize[i] = h->lstblocksize[i];
 		}
+		//Meter 3 NTP + Per Frame measurements
+		m_pTestClient[t]->m_header.ntp_address = h->ntp_address;
+		m_pTestClient[t]->m_header.ntp_stamps = h->ntp_stamps;
+		m_pTestClient[t]->m_header.per_frame = h->per_frame;
+		m_pTestClient[t]->m_header.frame_size = h->frame_size;
 	}
 	return 0;
 }
@@ -920,48 +942,68 @@ void CControlDlg::ProcessData(CString s, int i)
 {
 	if (s.GetLength() == 0) return;
 
-	CString str;
-	if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
-		str.Format("%3d,%s\n", i, (LPCTSTR)s);
+	//executed if message sent from the client is the basic variety:
+	//compatible with older versions
+	if (s.GetAt(0) != ':') {
+
+		CString str;
+		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
+			str.Format("%3d,%s\n", i, (LPCTSTR)s);
+			if(m_fProcessData) {		//Test Flag to start and stop processing 
+				outfile.Write((LPCTSTR)str, str.GetLength());
+			}
+		}
+
+		// Parse the string
+		// eg. - "  0,test002,0,357,64,391.836525,1.849120"
+		// index (3 digit fixed), filename (variable length string), mode (0,1,2,3), total length (Kbyte, DWORD),
+		// block length (Kbyte, int), transfer rate (Mbytes/s, double), latency (ms, double)
+		//there is some other data behind, the array of block timestamps
+		// The index is already passed as a parameter
+		//CString file;
+		int mode, blocksize, t1, t2;
+		DWORD length;
+		double rate, latency;
+
+		t1 = s.Find(',');
+		t2 = s.Find(',', t1 + 1);
+		mode = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);
+		length = atol((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);
+		blocksize = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		t1 = t2;
+		t2 = s.Find(',', t1 + 1);							//This should be the last ','
+		rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
+
+		latency = atof((LPCTSTR)s.Mid(t2 + 1));
+
+		
+
+		UpdateDisplay(rate, latency, blocksize, length);
+	
 		if(m_fProcessData) {		//Test Flag to start and stop processing 
-			outfile.Write((LPCTSTR)str, str.GetLength());
+			m_Data.AddResult(mode, length, blocksize, rate, latency);
+		}
+
+	} else {
+		//here we have received a string starting with ':', means we'll just write it in the csv file, without
+		//updating any values on the CtrlApp screen
+		//a string starting with ':' is a timestamp, the frame size or the delta times
+		CString str;
+		if (m_SaveResults && outfile.m_hFile != CFile::hFileNull) {
+			str.Format("%3d,%s\n", i, (LPCTSTR)s);
+			if(m_fProcessData) {		//Test Flag to start and stop processing 
+				outfile.Write((LPCTSTR)str, str.GetLength());
+			}
 		}
 	}
-	// Parse the string
-	// eg. - "  0,test002,0,357,64,391.836525,1.849120"
-	// index (3 digit fixed), filename (variable length string), mode (0,1,2,3), total length (Kbyte, DWORD),
-	// block length (Kbyte, int), transfer rate (Mbytes/s, double), latency (ms, double)
-	// The index is already passed as a parameter
-	//CString file;
-	int mode, blocksize, t1, t2;
-	DWORD length;
-	double rate, latency;
-
-	t1 = s.Find(',');
-	t2 = s.Find(',', t1 + 1);
-	mode = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);
-	length = atol((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);
-	blocksize = atoi((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	t1 = t2;
-	t2 = s.Find(',', t1 + 1);							//This should be the last ','
-	rate = atof((LPCTSTR)s.Mid(t1 + 1, t2 - t1 - 1));
-
-	latency = atof((LPCTSTR)s.Mid(t2 + 1));
-
-	//str.Format("%s, %d, %ld, %d, %f, %f",(LPCTSTR)s, mode, length, blocksize, rate, latency);
-	//AfxMessageBox(str);
-	UpdateDisplay(rate, latency, blocksize, length);
 	
-	if(m_fProcessData) {		//Test Flag to start and stop processing 
-		m_Data.AddResult(mode, length, blocksize, rate, latency);
-	}
 	m_pTestClient[i]->m_bResponding = TRUE;
 	if((m_nStartAveraging % (m_nSelClients * 10)) == 0) {
 		CheckForResponse();
